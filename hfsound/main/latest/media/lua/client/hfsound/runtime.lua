@@ -10,9 +10,7 @@ local options      = require('hfsound/options/options')
 
 ---@class (partial) _HFSOUND
 ---@field runtime   hfs.Runtime?
----@field options   hfs.HfsoundOptions
 HFSOUND            = HFSOUND or {}
-HFSOUND.options    = options.HfSoundOptions.new()
 
 ---@class (exact) hfs.Runtime
 ---@field events        hfs.RuntimeEvents

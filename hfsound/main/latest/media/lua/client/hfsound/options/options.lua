@@ -134,29 +134,32 @@ local function get_soundinfo()
     return { info = info, order = order }
 end
 
----@alias Callback_OnConfigChanged fun(target: unknown, config: hfs.HfsoundOptions, ...: unknown )
+---@alias Callback_OnConfigChanged fun(target: unknown, config: hfs.Options, ...: unknown )
 
----@class hfs.HfsoundOptions
+---@class hfs.Options
 local HfSoundOptions = {}; HfSoundOptions.__index = HfSoundOptions
 
----@return hfs.HfsoundOptions
+
+---@return hfs.Options
 function HfSoundOptions.new()
     local obj = setmetatable({}, HfSoundOptions)
 
     ---@type { listener:Callback_OnConfigChanged, target: any }[]
     obj.listeners = {}
 
-    obj._onconfigapply = function(...)
-        for _, listener in ipairs(obj.listeners) do
-            listener.listener(listener.target, obj, ...)
-        end
-    end
+    obj._onconfigapply = function(...) obj:broadcast(...) end
 
     local soundinfo = get_soundinfo()
     local _sound_order = soundinfo.order
     local _sound_info = soundinfo.info
 
     local opt = optutil.options("hfsound")
+    local wrapped = opt.opt
+
+    ---@cast wrapped +{ onChange: fun(), onChangeApply:fun() }
+
+    wrapped.onChangeApply = obj._onconfigapply
+
     local options = {
         sounds = {},
         ---@type hfs.TaggedColorPicker[]
@@ -171,7 +174,6 @@ function HfSoundOptions.new()
     opt:addTitle("SoundEnable")
     for g, arr in pairs(_sound_order) do
         opt:addTitle(string.format("SoundEnable%s", g))
-
         for _, s in ipairs(arr) do
             local info = _sound_info[s]
             info.opt_enable = opt:addTickBox(string.format("SoundEnable%s", s), true, false)
@@ -184,13 +186,11 @@ function HfSoundOptions.new()
 
     for g, arr in pairs(_sound_order) do
         opt:addTitle(string.format("SoundColor%s", g))
-
         for _, s in ipairs(arr) do
             local info = _sound_info[s]
             info.opt_color = opt:addColorPicker(string.format("SoundColor%s", s), info.color, false)
             options.sounds[s].color = info.opt_color
             table.insert(options.colors, info.opt_color)
-
             info.color_configured = color.ConfiguredColor.new {
                 config = obj,
                 sound = s,
@@ -215,6 +215,16 @@ end
 ---@param sound hfs.config.Sound
 function HfSoundOptions:getconfiguredcolor(sound)
     return self.info[sound].color_configured
+end
+
+function HfSoundOptions:broadcast(...)
+    print("broadcast:")
+    for k, v in ipairs({ ... }) do
+        print(string.format("%s %s", tostring(k), tostring(v)))
+    end
+    for _, listener in ipairs(self.listeners) do
+        listener.listener(listener.target, self, ...)
+    end
 end
 
 ---@param listener Callback_OnConfigChanged
@@ -246,5 +256,19 @@ end
 -- #endregion
 
 local module = { HfSoundOptions = HfSoundOptions }
+
+
+
+---@class (partial) _HFSOUND
+---@field options hfs.Options?
+HFSOUND = HFSOUND or {}
+
+function module.get_options()
+    if HFSOUND.options == nil then
+        HFSOUND.options = module.HfSoundOptions.new()
+    end
+
+    return HFSOUND.options
+end
 
 return module

@@ -1,4 +1,5 @@
 local colors = require('hfsound/colors')
+local xtabla = require('hfsound/reflect/tables')
 
 -- #region hfs.Color
 
@@ -6,7 +7,7 @@ local colors = require('hfsound/colors')
 local ConfiguredColor = {}; ConfiguredColor.__index = ConfiguredColor
 
 ---@class hfs.ConfiguredColor.Kwargs
----@field config        hfs.HfsoundOptions
+---@field config        hfs.Options
 ---@field sound         hfs.config.Sound
 ---@field option        hfs.TaggedColorPicker
 ---@field alpha?        number
@@ -16,6 +17,9 @@ local ConfiguredColor = {}; ConfiguredColor.__index = ConfiguredColor
 ---@return hfs.ConfiguredColor
 function ConfiguredColor.new(kw)
     local obj      = setmetatable({}, ConfiguredColor)
+
+    ---@type boolean
+    obj.dirty      = true
 
     obj.config     = kw.config
     obj.sound      = kw.sound
@@ -27,14 +31,21 @@ function ConfiguredColor.new(kw)
     obj.b          = 0.0
     obj.a          = kw.alpha or 0.5
 
-    obj:update()
+    obj.config:subscribe(obj.setdirty, obj)
+    obj:setdirty()
 
     return obj
+end
+
+function ConfiguredColor:setdirty()
+    self.dirty = true
 end
 
 function ConfiguredColor:update()
     local color = self.option:getValue()
     self.r, self.g, self.b = colors.desaturate(color.r, color.g, color.b, 1 - self.saturation)
+    print("updated to: ", string.format("%f, %f, %f", self.r, self.g, self.b), " from ", self.sound)
+    self.dirty = false
 end
 
 function ConfiguredColor:desaturate(factor)
@@ -48,6 +59,8 @@ function ConfiguredColor:desaturate(factor)
 end
 
 function ConfiguredColor:compute(_)
+    if self.dirty then self:update() end
+
     return self.r, self.g, self.b, self.a
 end
 

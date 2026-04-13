@@ -1,36 +1,34 @@
-local styles       = require('hfsound/scope/style')
+local styles          = require('hfsound/scope/style')
+local options         = require("hfsound/options/options")
 
-local lib          = {}
+local module          = {}
 
-lib.DEFAULT_STYLE  = styles.basic {
-    color = styles.colors.solid("#ff800060"),
+local opts            = options.get_options()
+
+module.DEFAULT_STYLE  = styles.basic {
+    color = opts:getconfiguredcolor("ZombieOther"),
     arc   = math.pi * 2 / 3
 }
 
-lib.BREATH_STYLE   = styles.basic {
-    color = styles.colors.cyclic {
-        colors = {
-            "#D3FF8200", "#E4FFB360", "#A6FF0060", "#E4FFB360",
-        },
-        rate = 0.5,
-    },
+module.BREATH_STYLE   = styles.basic {
+    color = opts:getconfiguredcolor("ZombieIdle"),
     arc   = math.pi * 0.5
 }
 
-lib.FOOTSTEP_STYLE = styles.basic {
-    color = styles.colors.solid("#FFEE0080"),
+module.FOOTSTEP_STYLE = styles.basic {
+    color = opts:getconfiguredcolor("ZombieStep"),
     arc   = math.pi * 2 / 3
 }
 
-lib.CLAMBER_STYLE  = styles.basic {
-    color    = styles.colors.solid("#ff800080"),
+module.CLAMBER_STYLE  = styles.basic {
+    color    = opts:getconfiguredcolor("ZombieClamber"),
     arc      = math.pi * 2 / 3,
     gradient = "edge"
 }
 
-lib.ATTACK_STYLE   = styles.basic {
-    color = styles.colors.solid("#FF000060"),
+module.ATTACK_STYLE   = styles.basic {
+    color = opts:getconfiguredcolor("ZombieAggression"),
     arc   = math.pi * 2 / 3
 }
 
-return lib
+return module
