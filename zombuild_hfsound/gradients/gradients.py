@@ -1,19 +1,17 @@
+from abc import ABC
 from typing import TYPE_CHECKING
 
-from abc import ABC
-from warnings import deprecated
+import numpy as np
 from PIL import Image
 
-import numpy as np
-
-from zombuild_hfsound.gradients.easing import easein_circular, smoothstep, supercircular
-
-from .util import cached_function
+from zombuild_hfsound.gradients.easing import smoothstep
 
 if TYPE_CHECKING:
     from typing import Any, Callable
 
-type GradientFunction = Callable[[float | np.float64, float | np.float64], float | np.float64]
+type GradientFunction = Callable[
+    [float | np.float64, float | np.float64], float | np.float64
+]
 
 type VectorFunction = Callable[[GradientArray], GradientArray]
 """
@@ -42,8 +40,10 @@ class ClosureGradient(Gradient):
         return self.fn(x, y)
 
     def solve(self, width: int, height: int):
-        f = lambda y, x: self.evaluate(x / width, y / height)
-        base = np.clip(np.fromfunction(f, (height, width)), 0, 1)
+        def scaled(y, x):
+            return self.evaluate(x / width, y / height)
+
+        base = np.clip(np.fromfunction(scaled, (height, width)), 0, 1)
         return base
 
 
@@ -80,7 +80,6 @@ class IndependentGradient(Gradient):
         )
 
         return np.clip(horizontal_alpha[None, :] * vertical_alpha[:, None], 0, 1)
-
 
 
 def gradient_default(exposure: float, softness: float, knee: float = 0.25):

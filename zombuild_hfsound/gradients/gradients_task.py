@@ -1,11 +1,15 @@
-from zombuild_hfsound.gradients.gradients import Gradient, gradient_default, gradient_electronic
+import time
 
-from zombuild.fs import expand
 from zombuild import Invocation
+from zombuild.fs import expand
 from zombuild.tasks import ActionableTask
 from zombuild_core import CorePlugin
 
-import time
+from zombuild_hfsound.gradients.gradients import (
+    Gradient,
+    gradient_default,
+    gradient_electronic,
+)
 
 
 class GradientsTask(ActionableTask):

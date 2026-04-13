@@ -1,11 +1,9 @@
 import zombuild
-
-from zombuild import Invocation
 import zombuild.plugins
+from zombuild import Invocation
+from zombuild.plugins import ZombuildPlugin
 
 from .gradients.gradients_task import GradientsTask
-
-from zombuild.plugins import ZombuildPlugin
 
 
 class _CustomPlugin(ZombuildPlugin):

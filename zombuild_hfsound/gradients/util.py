@@ -2,7 +2,6 @@ from typing import Callable, TypeVarTuple, Unpack
 
 import numpy
 
-
 Args = TypeVarTuple("Args")
 
 

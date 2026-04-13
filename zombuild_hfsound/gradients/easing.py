@@ -1,6 +1,5 @@
 import numpy as np
 
-
 smoothstep_polynomial = np.polynomial.Polynomial((0, 0, 0, 10, -15, 6))
 
 

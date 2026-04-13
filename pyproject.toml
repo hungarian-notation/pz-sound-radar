@@ -17,4 +17,13 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 packages = [{ include = "zombuild_hfsound" }]
 
+
+[tool.ruff.lint]
+select = ["F", "W", "I"] 
+ignore = []
+
+
 [tool.poetry.dependencies]
+
+[dependency-groups]
+dev = ["ruff (>=0.15.10,<0.16.0)"]
