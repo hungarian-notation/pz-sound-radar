@@ -1,0 +1,14 @@
+<TEXT> Adds an HUD that displays the directions sounds are coming from.
+
+This mod is designed primarily as an accessibility aid, as the game is balanced 
+with an assumption that players possess normative binaural hearing. While the 
+intent is not to make the game easier per se, it will enhance the player's 
+situational awareness.
+
+Note that the effects of the deaf, hard-of-hearing, and keen-hearing traits are 
+modeled by this mod. This mod has no effect for characters with the deaf trait,
+and characters with the other traits will have the range at which they perceive 
+sounds altered accordingly.
+
+This mod was inspired in part by the currently defunct `Visual Sounds` mod, 
+though it has some major differences that I consider to be strict upgrades.

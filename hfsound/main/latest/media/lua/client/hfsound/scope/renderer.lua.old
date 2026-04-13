@@ -1,0 +1,455 @@
+local geomlib = require('hfsound/geom')
+local rotateVector = geomlib.rotate_vector
+local project_isometric = geomlib.project_isometric
+local project_isometricoff = geomlib.project_isometricoff
+
+local hf_graphics = require('hfsound/graphics')
+local drawTextureIsometric = hf_graphics.drawTextureIsometric
+local drawTexture = hf_graphics.drawTexture
+
+local PI = 3.141592653589793
+
+---@enum hfs.Gradient
+local Gradients = {
+    ELECTRONICS_4_NARROW = "electronics-4-narrow",
+    ELECTRONICS_4_WIDE = "electronics-4-wide",
+    ELECTRONICS_5 = "electronics-5",
+    ELECTRONICS_5_NARROW = "electronics-5-narrow",
+    ELECTRONICS_5_WIDE = "electronics-5-wide",
+    NORMAL = "normal",
+    NORMAL_NARROW = "normal-narrow",
+    NORMAL_WIDE = "normal-wide",
+    ELECTRONICS_3 = "electronics-3",
+    ELECTRONICS_3_NARROW = "electronics-3-narrow",
+    ELECTRONICS_3_WIDE = "electronics-3-wide",
+    ELECTRONICS_4 = "electronics-4"
+}
+
+---@enum hfs.Icon
+local Icons = {
+    ALARM = "alarm",
+    ALARM_ACTIVE = "alarm-active",
+    ALARM_BANG = "alarm-bang",
+    ALARM_CLOCK = "alarm-clock",
+    ALARM_DETECTOR = "alarm-detector",
+    ALARM_SIREN = "alarm-siren",
+    APPLIANCE_GENERATOR = "appliance-generator",
+    APPLIANCE_LAUNDRY = "appliance-laundry",
+    APPLIANCE_MICROWAVE = "appliance-microwave",
+    APPLIANCE_OVEN = "appliance-oven",
+    APPLIANCE_RADIO = "appliance-radio",
+    APPLIANCE_TELEVISION = "appliance-television",
+    ARROW_DOWN = "arrow-down",
+    ARROW_DOWN_2 = "arrow-down-2",
+    ARROW_DOWN_3 = "arrow-down-3",
+    ARROW_UP = "arrow-up",
+    ARROW_UP_2 = "arrow-up-2",
+    ARROW_UP_3 = "arrow-up-3",
+    OBJECT_BOMB = "object-bomb",
+    OBJECT_DOOR = "object-door",
+    OBJECT_DOOR_GARAGE = "object-door-garage",
+    OBJECT_FENCE = "object-fence",
+    OBJECT_PISTOL = "object-pistol",
+    OBJECT_STAIRS = "object-stairs",
+    OBJECT_WINDOW = "object-window",
+    SYMBOL_BANG = "symbol-bang",
+    SYMBOL_BOLT = "symbol-bolt",
+    SYMBOL_COMBAT = "symbol-combat",
+    SYMBOL_DEATH = "symbol-death",
+    SYMBOL_DESTRUCTION = "symbol-destruction",
+    SYMBOL_FOOT = "symbol-foot",
+    SYMBOL_GEARS = "symbol-gears",
+    SYMBOL_ILLNESS = "symbol-illness",
+    SYMBOL_QUESTION = "symbol-question",
+    SYMBOL_WAVEFORM = "symbol-waveform",
+    VEHICLE_CAR = "vehicle-car",
+    VEHICLE_CAR_ALERT = "vehicle-car-alert",
+    VEHICLE_HELICOPTER = "vehicle-helicopter",
+    VEHICLE_TRUCK = "vehicle-truck"
+}
+
+local TAU = 2 * PI
+local OCTAVE_BASE = 1.2
+local SPRITE_UNSCALED_RADIUS = 256.0 - 64.0
+local CHEVRON_UNSCALED_SIZE = 128
+-- local SPRITE_SCALE = 1.0 / SPRITE_UNSCALED_RADIUS
+
+---@class (partial) hfr.ScopeRenderer
+---@field icons { [hfs.Icon]: Texture }
+local ScopeRenderer = { Icons = Icons }; ScopeRenderer.__index = ScopeRenderer
+
+local function getOwnTexture(type, name)
+    return getTexture(string.format("media/textures/hf.radar.%s/%s.png", tostring(type), tostring(name)))
+end
+
+---@class hfr.ScopeRenderer.Kwargs
+---@field player? integer
+---@field quality? number `default := 1 / math.rad(10)`
+---@field segment_limit? integer `default := 24` upper bound on how many segments a single arc
+--- can be rendered with
+
+---@param kw hfr.ScopeRenderer.Kwargs
+function ScopeRenderer.new(kw)
+    ---@class (partial) hfr.ScopeRenderer
+    local obj = setmetatable({}, ScopeRenderer)
+
+    ---@type Texture[]
+    obj.arcTextureArray = {}
+
+    for i = 10, 60, 10 do
+        table.insert(obj.arcTextureArray, getOwnTexture("indicator", i))
+    end
+
+    obj.gradients = {
+        [Gradients.ELECTRONICS_4_NARROW] = getTexture("media/textures/hf.radar.gradient/electronics-4-narrow.png"),
+        [Gradients.ELECTRONICS_4_WIDE]   = getTexture("media/textures/hf.radar.gradient/electronics-4-wide.png"),
+        [Gradients.ELECTRONICS_5]        = getTexture("media/textures/hf.radar.gradient/electronics-5.png"),
+        [Gradients.ELECTRONICS_5_NARROW] = getTexture("media/textures/hf.radar.gradient/electronics-5-narrow.png"),
+        [Gradients.ELECTRONICS_5_WIDE]   = getTexture("media/textures/hf.radar.gradient/electronics-5-wide.png"),
+        [Gradients.NORMAL]               = getTexture("media/textures/hf.radar.gradient/normal.png"),
+        [Gradients.NORMAL_NARROW]        = getTexture("media/textures/hf.radar.gradient/normal-narrow.png"),
+        [Gradients.NORMAL_WIDE]          = getTexture("media/textures/hf.radar.gradient/normal-wide.png"),
+        [Gradients.ELECTRONICS_3]        = getTexture("media/textures/hf.radar.gradient/electronics-3.png"),
+        [Gradients.ELECTRONICS_3_NARROW] = getTexture("media/textures/hf.radar.gradient/electronics-3-narrow.png"),
+        [Gradients.ELECTRONICS_3_WIDE]   = getTexture("media/textures/hf.radar.gradient/electronics-3-wide.png"),
+        [Gradients.ELECTRONICS_4]        = getTexture("media/textures/hf.radar.gradient/electronics-4.png"),
+    }
+
+    obj.icons = {
+        [Icons.ALARM]                = getTexture("media/textures/hf.radar.icon/alarm.png"),
+        [Icons.ALARM_ACTIVE]         = getTexture("media/textures/hf.radar.icon/alarm-active.png"),
+        [Icons.ALARM_BANG]           = getTexture("media/textures/hf.radar.icon/alarm-bang.png"),
+        [Icons.ALARM_CLOCK]          = getTexture("media/textures/hf.radar.icon/alarm-clock.png"),
+        [Icons.ALARM_DETECTOR]       = getTexture("media/textures/hf.radar.icon/alarm-detector.png"),
+        [Icons.ALARM_SIREN]          = getTexture("media/textures/hf.radar.icon/alarm-siren.png"),
+        [Icons.APPLIANCE_GENERATOR]  = getTexture("media/textures/hf.radar.icon/appliance-generator.png"),
+        [Icons.APPLIANCE_LAUNDRY]    = getTexture("media/textures/hf.radar.icon/appliance-laundry.png"),
+        [Icons.APPLIANCE_MICROWAVE]  = getTexture("media/textures/hf.radar.icon/appliance-microwave.png"),
+        [Icons.APPLIANCE_OVEN]       = getTexture("media/textures/hf.radar.icon/appliance-oven.png"),
+        [Icons.APPLIANCE_RADIO]      = getTexture("media/textures/hf.radar.icon/appliance-radio.png"),
+        [Icons.APPLIANCE_TELEVISION] = getTexture("media/textures/hf.radar.icon/appliance-television.png"),
+        [Icons.ARROW_DOWN]           = getTexture("media/textures/hf.radar.icon/arrow-down.png"),
+        [Icons.ARROW_DOWN_2]         = getTexture("media/textures/hf.radar.icon/arrow-down-2.png"),
+        [Icons.ARROW_DOWN_3]         = getTexture("media/textures/hf.radar.icon/arrow-down-3.png"),
+        [Icons.ARROW_UP]             = getTexture("media/textures/hf.radar.icon/arrow-up.png"),
+        [Icons.ARROW_UP_2]           = getTexture("media/textures/hf.radar.icon/arrow-up-2.png"),
+        [Icons.ARROW_UP_3]           = getTexture("media/textures/hf.radar.icon/arrow-up-3.png"),
+        [Icons.OBJECT_BOMB]          = getTexture("media/textures/hf.radar.icon/object-bomb.png"),
+        [Icons.OBJECT_DOOR]          = getTexture("media/textures/hf.radar.icon/object-door.png"),
+        [Icons.OBJECT_DOOR_GARAGE]   = getTexture("media/textures/hf.radar.icon/object-door-garage.png"),
+        [Icons.OBJECT_FENCE]         = getTexture("media/textures/hf.radar.icon/object-fence.png"),
+        [Icons.OBJECT_PISTOL]        = getTexture("media/textures/hf.radar.icon/object-pistol.png"),
+        [Icons.OBJECT_STAIRS]        = getTexture("media/textures/hf.radar.icon/object-stairs.png"),
+        [Icons.OBJECT_WINDOW]        = getTexture("media/textures/hf.radar.icon/object-window.png"),
+        [Icons.SYMBOL_BANG]          = getTexture("media/textures/hf.radar.icon/symbol-bang.png"),
+        [Icons.SYMBOL_BOLT]          = getTexture("media/textures/hf.radar.icon/symbol-bolt.png"),
+        [Icons.SYMBOL_COMBAT]        = getTexture("media/textures/hf.radar.icon/symbol-combat.png"),
+        [Icons.SYMBOL_DEATH]         = getTexture("media/textures/hf.radar.icon/symbol-death.png"),
+        [Icons.SYMBOL_DESTRUCTION]   = getTexture("media/textures/hf.radar.icon/symbol-destruction.png"),
+        [Icons.SYMBOL_FOOT]          = getTexture("media/textures/hf.radar.icon/symbol-foot.png"),
+        [Icons.SYMBOL_GEARS]         = getTexture("media/textures/hf.radar.icon/symbol-gears.png"),
+        [Icons.SYMBOL_ILLNESS]       = getTexture("media/textures/hf.radar.icon/symbol-illness.png"),
+        [Icons.SYMBOL_QUESTION]      = getTexture("media/textures/hf.radar.icon/symbol-question.png"),
+        [Icons.SYMBOL_WAVEFORM]      = getTexture("media/textures/hf.radar.icon/symbol-waveform.png"),
+        [Icons.VEHICLE_CAR]          = getTexture("media/textures/hf.radar.icon/vehicle-car.png"),
+        [Icons.VEHICLE_CAR_ALERT]    = getTexture("media/textures/hf.radar.icon/vehicle-car-alert.png"),
+        [Icons.VEHICLE_HELICOPTER]   = getTexture("media/textures/hf.radar.icon/vehicle-helicopter.png"),
+        [Icons.VEHICLE_TRUCK]        = getTexture("media/textures/hf.radar.icon/vehicle-truck.png"),
+    }
+
+    obj.gradient = obj.gradients[Gradients.NORMAL]
+    --- the args table used to initialize this instance
+    obj.kwargs = kw
+
+    obj._player = nil
+    obj._zoom = 1.0
+    obj._px = 0.0
+    obj._py = 0.0
+    obj._t = os.time()
+
+    obj.unitAngle = math.rad(10)
+
+    obj.quality = kw.quality or 1 / math.rad(10)
+    obj.quality_limit = kw.segment_limit or 32
+
+    obj.playerIndex = kw.player or 0
+    obj.indicatorHeight = 0.5
+
+    return obj
+end
+
+function ScopeRenderer:update()
+    local playerIndex = self.playerIndex
+    local p = getSpecificPlayer(playerIndex)
+
+    self._zoom = getCore():getZoom(playerIndex)
+    self._player = p
+    self._px = isoToScreenX(0, p:getX(), p:getY(), p:getZ())
+    self._py = isoToScreenY(0, p:getX(), p:getY(), p:getZ())
+    self._t = os.time()
+end
+
+-- ---@param octave number logarithmic octave
+-- ---@param offset number
+-- ---@return number radius radius factor (unscaled)
+-- function ArcRenderer.getOctaveFactor(octave, offset)
+--     return math.pow(OCTAVE_BASE, octave) + offset
+-- end
+
+---comment
+---@param octave number logarithmic octave
+---@param offset number
+---@return number radius
+function ScopeRenderer:calculateScale(octave, offset --[[, fixedScale]])
+    local zoom = self._zoom
+    local radiusFactor = math.pow(OCTAVE_BASE, octave) + offset
+    return radiusFactor / zoom
+end
+
+local function nearestArcFactor(val)
+    local dividend = TAU / val
+    local ideal = math.floor(dividend + 0.5)
+    return TAU / ideal
+end
+
+local function round(value, step)
+    return math.floor(value / step + 0.5) * step
+end
+
+
+---Renders an indicator arc around the player's head.
+---@param sprite Texture
+---@param octave number The layer of arc to draw. On-screen radius is logarithmic with this value as its exponent.
+---@param theta number Angle (in radians) of the center of the arc.
+---@param arclen number Sweep angle of the arc. Arc will be from `theta - arcAngle / 2` to `theta + arcAngle / 2`
+---@param r number red
+---@param g number green
+---@param b number blue
+---@param a number alpha
+function ScopeRenderer:renderChevronArc(sprite, octave, theta, arclen, r, g, b, a)
+    local texture          = sprite
+    local unitAngle        = nearestArcFactor(self.unitAngle / math.pow(OCTAVE_BASE, octave))
+    local useTheta         = round(theta + unitAngle / 2, unitAngle) - unitAngle / 2
+
+    -- local arcAngleClamped  = math.min(TAU, arclen / math.pow(OCTAVE_BASE, octave))
+    -- local arcAngleAdjusted = math.floor(arcAngleClamped / unitAngle) * unitAngle
+    local arcAngleAdjusted = math.min(TAU, math.max(unitAngle, math.floor(arclen / unitAngle) * unitAngle))
+    local arcSegmentCount  = math.max(1, math.floor(arcAngleAdjusted / unitAngle + 0.5))
+    local arcStart         = useTheta - unitAngle * (arcSegmentCount / 2)
+    local zoom             = self._zoom
+    local playerX          = self._px
+    local playerY          = self._py
+    local scale            = 0.25 * CHEVRON_UNSCALED_SIZE / sprite:getWidth()
+
+    local _iSegment        = 0
+    while _iSegment < arcSegmentCount do
+        local fade = 1 - math.abs(arcSegmentCount / 2 - _iSegment) / (arcSegmentCount / 2)
+
+        local arcSegmentTheta = (arcStart + unitAngle * _iSegment) + (unitAngle) / 2
+        local radius = self:calculateScale(octave, 0)
+
+        local offsetTheta = arcSegmentTheta
+        local rx, ry = rotateVector(offsetTheta, radius, 0)
+        local cx, cy = project_isometric(rx, ry, self.indicatorHeight / zoom, 0)
+        local spriteTheta = math.pi
+
+        drawTexture(texture, scale, cx + playerX, cy + playerY, spriteTheta, r, g, b, a * fade)
+
+        --   renderIndicatorSlice(self, octave, arcSegmentTheta, r, g, b, a, texture)
+        _iSegment = _iSegment + 1
+    end
+end
+
+---Renders an indicator arc around the player's head.
+---@param octave number The layer of arc to draw. On-screen radius is logarithmic with this value as its exponent.
+---@param _r2 any: unused in this version of the renderer
+---@param theta number Angle (in radians) of the center of the arc.
+---@param arclen number Sweep angle of the arc. Arc will be from `theta - arcAngle / 2` to `theta + arcAngle / 2`
+---@param r number red
+---@param g number green
+---@param b number blue
+---@param a number alpha
+function ScopeRenderer:renderIndicatorArc(octave, _r2, theta, arclen, r, g, b, a)
+    local renderIndicatorSlice = self.renderIndicatorSliceIsometric
+    local textureArray         = self.arcTextureArray
+    local unitAngle            = self.unitAngle
+    local useTheta             = round(theta + unitAngle / 2, unitAngle) - unitAngle / 2
+    -- local arcAngleAdjusted_0   = math.min(TAU, arclen / math.pow(OCTAVE_BASE, octave))
+    -- local arcAngleAdjusted     = math.floor(arcAngleAdjusted_0 / unitAngle) * unitAngle
+    local arcAngleAdjusted     = math.min(TAU, math.max(unitAngle, math.floor(arclen / unitAngle) * unitAngle))
+    local arcSegmentCount      = math.max(1, math.floor(arcAngleAdjusted / unitAngle + 0.5))
+    local arcStart             = useTheta - unitAngle * (arcSegmentCount / 2)
+
+    local _iSegment            = 0
+
+    while _iSegment < arcSegmentCount do
+        local useArc = math.max(1, math.min(#textureArray, arcSegmentCount - _iSegment))
+        local arcSegmentTheta = (arcStart + unitAngle * _iSegment) + (useArc * unitAngle) / 2
+        local texture = textureArray[useArc]
+
+        if texture == nil then
+            error("no such texture: " .. useArc)
+        end
+
+        renderIndicatorSlice(self, octave, arcSegmentTheta, r, g, b, a, texture)
+        _iSegment = _iSegment + useArc
+    end
+end
+
+local function segment_corner(_theta, _radius)
+    return _radius * math.cos(_theta), _radius * math.sin(_theta)
+end
+
+
+function ScopeRenderer:calculate_steps(radius, length)
+    local rawsteps = self.quality * length / radius
+    local steps    = math.min(self.quality_limit, math.max(1, math.ceil(rawsteps)))
+    return steps
+end
+
+function ScopeRenderer:renderPolygonalIndicatorArc(radius, r2, theta, length, r, g, b, a)
+    local playerX      = self._px
+    local playerY      = self._py
+    local zoom         = self._zoom
+    local height       = self.indicatorHeight / zoom
+
+    -- local inner_radius = radius - thickness / 2
+    -- local outer_radius = radius + thickness / 2
+
+    local inner_radius = (r2 or radius - 0.25) / zoom
+    local outer_radius = (radius) / zoom
+    local innerAngle   = math.min(TAU, length / radius)
+
+    if innerAngle < 0.1 then return end
+
+    local from             = theta - (innerAngle / 2.0)
+    local to               = theta + (innerAngle / 2.0)
+    local steps            = self:calculate_steps(radius, length)
+    local steps_reciprocal = 1 / steps
+    local sweep            = to - from
+    local delta            = sweep / steps
+
+    local valpha           = steps > 2 and innerAngle < TAU
+    -- local a1     = valpha and 0 or a
+    -- local a2     = valpha and 0 or a
+
+    local tx1              = 0.5
+    local tx2              = 0.5
+
+    for i = 0, steps - 1 do
+        local t1 = from + i * delta
+        local t2 = t1 + delta
+
+        if valpha then
+            -- a1 = graduated_alpha(i / steps)
+            -- a2 = graduated_alpha((i + 1) / steps)
+            -- if i == 0 or i == steps - 1 then
+            --     --print(i, t1, t2, tx, ":", to, from)
+            -- end
+
+            tx1 = i * steps_reciprocal
+            tx2 = tx1 + steps_reciprocal
+        else
+
+        end
+
+        -- FIXME: unroll and reduce
+        local x1, y1 = segment_corner(t1, inner_radius)
+        x1, y1       = project_isometricoff(x1, y1, height, 0, playerX, playerY)
+
+        local x2, y2 = segment_corner(t1, outer_radius)
+        x2, y2       = project_isometricoff(x2, y2, height, 0, playerX, playerY)
+
+        local x3, y3 = segment_corner(t2, outer_radius)
+        x3, y3       = project_isometricoff(x3, y3, height, 0, playerX, playerY)
+
+        local x4, y4 = segment_corner(t2, inner_radius)
+        x4, y4       = project_isometricoff(x4, y4, height, 0, playerX, playerY)
+
+        -- alternate quad orientation so the triangles alternate
+
+        if i % 2 == 0 then
+            getRenderer():renderPoly(self.gradient,
+                x2, y2,
+                x3, y3,
+                x4, y4,
+                x1, y1,
+                r, g, b, a,
+                tx1, 0,
+                tx2, 0,
+                tx2, 1,
+                tx1, 1
+            )
+        else
+            getRenderer():renderPoly(self.gradient,
+                x1, y1,
+                x2, y2,
+                x3, y3,
+                x4, y4,
+                r, g, b, a,
+                tx1, 1,
+                tx1, 0,
+                tx2, 0,
+                tx2, 1
+            )
+        end
+
+        -- getRenderer():renderlinef(nil, x1, y1, x2, y2, 1, 0, 0, 1, 1)
+        -- getRenderer():renderlinef(nil, x2, y2, x3, y3, 1, 1, 0, 1, 1)
+        -- getRenderer():renderlinef(nil, x3, y3, x4, y4, 0, 1, 0, 1, 1)
+        -- getRenderer():renderlinef(nil, x4, y4, x1, y1, 0, 1, 1, 1, 1)
+        -- getRenderer():renderlinef(nil, x3, y3, x1, y1, 0, 0, 1, 1, 1)
+    end
+
+    return steps
+end
+
+---@param radius number
+---@param theta number radians (in isometric coordinate system)
+---@param r number red
+---@param g number green
+---@param b number blue
+---@param a number alpha
+---@param texture Texture
+---@param spriteTheta number radians
+---@param scale number
+function ScopeRenderer:renderSprite(radius, theta, r, g, b, a, texture, spriteTheta, scale)
+    local playerX = self._px
+    local playerY = self._py
+    local zoom = self._zoom
+
+    local rx, ry = rotateVector(theta, radius / zoom, 0)
+    local cx, cy = project_isometric(rx, ry, self.indicatorHeight / zoom, 0)
+
+    drawTexture(texture, scale, cx + playerX, cy + playerY, spriteTheta + math.pi, r, g, b, a)
+end
+
+---@param octave number
+---@param theta number angle (in isometric coordinate system)
+---@param r number red
+---@param g number green
+---@param b number blue
+---@param a number alpha
+---@param texture Texture
+function ScopeRenderer:renderIndicatorSliceIsometric(octave, theta, r, g, b, a, texture)
+    local playerX = self._px
+    local playerY = self._py
+
+    local zoom = self._zoom
+    --- equal to `1 / zoom` at `octave == 0`
+    local octaveScale = self:calculateScale(octave, 0)
+
+    -- calculate the rotation in isometric space
+    local rx, ry = rotateVector(theta, octaveScale, 0)
+    -- project the rotated vector into screen space:
+    local cx, cy = project_isometric(rx, ry, self.indicatorHeight / zoom, 0)
+    -- flip the sprite by 180 degrees
+    local spriteTheta = theta + math.pi
+
+    drawTextureIsometric(texture,
+        octaveScale / SPRITE_UNSCALED_RADIUS,
+        cx + playerX, cy + playerY, spriteTheta,
+        r, g, b, a)
+end
+
+return ScopeRenderer

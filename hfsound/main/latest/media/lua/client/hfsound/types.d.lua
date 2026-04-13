@@ -1,0 +1,1 @@
+---@alias OmitFirst<T> std.Select<T..., 1>

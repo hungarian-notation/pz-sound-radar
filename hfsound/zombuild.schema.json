@@ -1,0 +1,547 @@
+{
+  "$defs": {
+    "BuildActionLike": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/IncludeConfig"
+        },
+        {
+          "$ref": "#/$defs/BuildConfig"
+        }
+      ]
+    },
+    "BuildConfig": {
+      "properties": {
+        "action": {
+          "default": "default",
+          "title": "Action",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IncludeLike"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/IncludeLike"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Target"
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "title": "BuildConfig",
+      "type": "object"
+    },
+    "ExternalString": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "title": "Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "",
+      "type": "object"
+    },
+    "IncludeConfig": {
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "prefix": {
+          "title": "Prefix",
+          "type": "string"
+        },
+        "include": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Include"
+        },
+        "ignore": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Ignore"
+        }
+      },
+      "required": [
+        "source",
+        "prefix"
+      ],
+      "title": "IncludeConfig",
+      "type": "object"
+    },
+    "IncludeLike": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/IncludeConfig"
+        }
+      ]
+    },
+    "ModConfig": {
+      "additionalProperties": true,
+      "properties": {
+        "authors": {
+          "description": "mod.info authors",
+          "items": {
+            "type": "string"
+          },
+          "title": "Authors",
+          "type": "array"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "mod.info url",
+          "title": "Url"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/ExternalString"
+            }
+          ],
+          "default": "",
+          "description": "mod.info description",
+          "title": "Description"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "enum": [
+                "map",
+                "vehicle",
+                "features",
+                "modpack"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "versionMin": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9]+(\\.[0-9]+){1,2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Versionmin"
+        },
+        "versionMax": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9]+(\\.[0-9]+){1,2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Versionmax"
+        },
+        "require": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Require",
+          "type": "array"
+        },
+        "incompatible": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Incompatible",
+          "type": "array"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "poster": {
+          "title": "Poster",
+          "type": "string"
+        },
+        "modversion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modversion"
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon"
+        },
+        "loadModAfter": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Loadmodafter",
+          "type": "array"
+        },
+        "loadModBefore": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Loadmodbefore",
+          "type": "array"
+        },
+        "pack": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Pack"
+        },
+        "tiledef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Tiledef"
+        },
+        "versions": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/BuildActionLike"
+              },
+              {
+                "items": {
+                  "$ref": "#/$defs/BuildActionLike"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "title": "Versions",
+          "type": "object"
+        }
+      },
+      "required": [
+        "poster",
+        "versions"
+      ],
+      "title": "ModConfig",
+      "type": "object"
+    },
+    "PluginConfig": {
+      "additionalProperties": true,
+      "properties": {
+        "plugin": {
+          "title": "Plugin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plugin"
+      ],
+      "title": "PluginConfig",
+      "type": "object"
+    },
+    "TaskConfig": {
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "TaskConfig",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "authors": {
+      "description": "mod.info authors",
+      "items": {
+        "type": "string"
+      },
+      "title": "Authors",
+      "type": "array"
+    },
+    "url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "mod.info url",
+      "title": "Url"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/ExternalString"
+        }
+      ],
+      "default": "",
+      "description": "mod.info description",
+      "title": "Description"
+    },
+    "category": {
+      "anyOf": [
+        {
+          "enum": [
+            "map",
+            "vehicle",
+            "features",
+            "modpack"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Category"
+    },
+    "versionMin": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9]+(\\.[0-9]+){1,2}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Versionmin"
+    },
+    "versionMax": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9]+(\\.[0-9]+){1,2}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Versionmax"
+    },
+    "require": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Require",
+      "type": "array"
+    },
+    "incompatible": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Incompatible",
+      "type": "array"
+    },
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    },
+    "preview": {
+      "title": "Preview",
+      "type": "string"
+    },
+    "mods": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ModConfig"
+      },
+      "minProperties": 1,
+      "title": "Mods",
+      "type": "object"
+    },
+    "plugins": {
+      "examples": [
+        [
+          "core"
+        ],
+        [
+          {
+            "args": {},
+            "plugin": "core"
+          }
+        ]
+      ],
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "$ref": "#/$defs/PluginConfig"
+          }
+        ]
+      },
+      "title": "Plugins",
+      "type": "array"
+    },
+    "tasks": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "$ref": "#/$defs/TaskConfig"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "build": "core.build",
+          "clean": "core.clean",
+          "clean-build": [
+            "clean",
+            "build"
+          ]
+        }
+      ],
+      "title": "Tasks",
+      "type": "object"
+    },
+    "output": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "format": "path",
+          "type": "string"
+        }
+      ],
+      "default": "dist",
+      "description": "output path (used by core plugin)",
+      "title": "Output"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "version",
+    "preview",
+    "mods"
+  ],
+  "title": "PackageConfig",
+  "type": "object"
+}

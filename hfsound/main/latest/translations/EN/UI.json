@@ -1,0 +1,111 @@
+{
+  "UI_options_hfsound": {
+    "@": "Sound Visualizer",
+
+
+    "SoundEnable": {
+      "@": "Enabled Sounds",
+      ".Zombie": {
+        "@": "Undead",
+
+        ".Idle": "Idle",
+        ".Step": "Walking",
+        ".Clamber": "Climbing",
+        ".Aggression": "Aggression",
+        ".Other": "Other"
+      },
+
+      ".Living": {
+        "@": "Living",
+        ".Player": "Players",
+        ".Animal": "Animals"
+      },
+
+      ".World": {
+        "@": "World",
+
+        ".Thump": "Thumped Doors, Windows and Fences",
+        ".Fire": "Fires",
+        ".Alarm": "House Alarms",
+        ".Thunder": "Thunder",
+        ".Gunfire": "Gunfire (Meta Event)",
+        ".Helicopter": "Helicopters",
+        ".Electronics": "Radios and Televisions",
+        ".Appliance": "Applicances",
+        ".Generator": "Generators"
+
+      },
+
+      ".Vehicle": {
+        "@": "Vehicles",
+        ".Engine": "Engines",
+        ".Alarm": "Horns and Alarms",
+        ".Lightbar": "Sirens"
+      }
+    },
+
+    "Display": {
+      "@": "Display & Performance",
+
+      ".Quality": "Indicator Quality",
+      ".Limit": "Maximum Indicators"
+    },
+
+    "SoundColor": {
+
+      "@": "Colors",
+
+      ".Zombie": {
+        "@": "Colors: Zombies",
+
+        ".Idle": "Idle",
+        ".Step": "Walking",
+        ".Clamber": "Climbing",
+        ".Aggression": "Aggression",
+        ".Other": "Other"
+      },
+
+      ".Living": {
+        "@": "Living",
+        ".Player": "Players",
+        ".Animal": "Animals"
+      },
+
+      ".World": {
+        "@": "Colors: World",
+        ".Thump": "Thumped Doors, Windows and Fences",
+        ".Fire": "Fires",
+        ".Alarm": "House Alarms",
+        ".Thunder": "Thunder",
+        ".Gunfire": "Gunfire (Meta Event)",
+        ".Helicopter": "Helicopters",
+        ".Electronics": "Radios and Televisions",
+        ".Appliance": "Applicances",
+        ".Generator": "Generators"
+
+      },
+
+      ".Vehicle": {
+        "@": "Vehicles",
+        ".Engine": "Engines",
+        ".Alarm": "Horns and Alarms",
+        ".Lightbar": "Sirens"
+      }
+    },
+
+    "ResetColorsButton": "Reset Colors",
+    "ResetColorsConfirm": "Are you sure you want to reset all colors?"
+  },
+
+  "UI_options_tooltip_hfsound": {
+    "Quality": [
+      "Controls the maximum number of segments that may be used to render a",
+      "sound indicator. Influences what proportion of that maximum is used",
+      "for smaller indicators."
+    ],
+    "Limit": "Maximum indicators to show on the screen at the same time.",
+    "Test": "Test Tooltip",
+    "ResetColorsButton": "Reset all colors to their default values."
+  }
+}
+

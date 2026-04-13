@@ -1,0 +1,20 @@
+[project]
+name = "zombuild_hfsound"
+version = "0.1.0"
+description = "sound visualization mod for project zomboid"
+authors = [{ name = "Chris Bode" }]
+requires-python = ">=3.14"
+dependencies = [
+    "pillow (>=12.2.0,<13.0.0)",
+    "numpy (>=2.4.4,<3.0.0)",
+    "zombuild @ git+https://github.com/hungarian-notation/zombuild@v0.1.2",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages = [{ include = "zombuild_hfsound" }]
+
+[tool.poetry.dependencies]
