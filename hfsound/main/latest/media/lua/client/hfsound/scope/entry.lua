@@ -1,4 +1,4 @@
-local pzutil = require('hfsound/pzutil')
+local util = require("hfsound/scope/util")
 
 ---@type hfs.Style
 local NOOP_STYLE = {
@@ -148,6 +148,11 @@ function Entry:_applyzombiesound(uid, sound, zombie)
     local ttl = math.max(0, self.m_duration - self.m_age)
 
     if ttl > 0 and ttl <= sound.duration then
+        -- Prefer to preserve the age, extending the duration instead
+        -- This lets us defined parametric animations based on the age of
+        -- the entry without worrying about constant sounds like the
+        -- house alarm getting stuck at the first frame.
+
         local difference = (sound.duration or 1.0) - ttl
         self.m_duration = self.m_duration + difference
     else
@@ -156,7 +161,7 @@ function Entry:_applyzombiesound(uid, sound, zombie)
     end
 
     self.m_callback_test = nil
-    self.m_callback_update = nil
+    self.m_callback_update = util.callback_followsource
 
     self.m_source = zombie
     self.m_radius = sound.radius
@@ -171,7 +176,19 @@ function Entry:_applyzombiesound(uid, sound, zombie)
 end
 
 function Entry:compute()
-    self.m_building = pzutil.buildingat(self.m_x, self.m_y, self.m_z)
+    local square = getSquare(self.m_x, self.m_y, self.m_z)
+
+    if square ~= nil then
+        local building = square:getBuildingDef()
+
+        if building ~= nil then
+            self.m_building = building:getID()
+        else
+            self.m_building = nil
+        end
+    else
+        self.m_building = nil
+    end
 end
 
 return Entry

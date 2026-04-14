@@ -2,7 +2,9 @@ local taggers = require('hfsound/worldsound/_impl/_taggers')
 local styles = require('hfsound/scope/style')
 local color = styles.colors.solid
 local Icons = require('hfsound/icons')
-local basicstyle = require('hfsound/worldsound/_impl/_basicstyle')
+
+local options = require("hfsound/options/options")
+local opts = options.get_options()
 
 ---type guarding validator for classifiers
 ---@param tbl hfs.WSClassifier
@@ -13,222 +15,220 @@ local function classifier(tbl)
     return tbl
 end
 
-local module                      = {}
-local COLORS                      = {}
+local module = { styles = {}, classifier = {} }
 
-COLORS.BROADCAST                  = styles.colors.cyclic {
-    rate = 1 / 2,
-
-    colors = {
-        "#60C0D040", "#00DDFF60", "#A5A5A540", "#60C0D050",
-        "#00DDFF40", "#60C0D060", "#00DDFF40", "#00DDFF50",
-        "#00DDFF40", "#00DDFF60", "#00DDFF40", "#60C0D050",
-        "#00DDFF40", "#A5A5A560", "#60C0D040", "#A5A5A550",
-        "#60C0D040", "#00DDFF60", "#00DDFF40", "#00DDFF50",
-    }
+module.styles.LIVING = styles.create {
+    color = opts:getconfiguredcolor("LivingPlayer")
 }
 
-COLORS.THUMP                      = styles.colors.cyclic {
-    colors = { "#Ff800060", "#ff000060" },
-    rate = 3
-};
-
-COLORS.HOUSE_ALARM                = styles.colors.cyclic {
-    colors = {
-        "#ccccffff",
-        "#ff0000ff",
-    },
-    rate = 4
+module.styles.ANIMAL = styles.create {
+    color = opts:getconfiguredcolor("LivingAnimal")
 }
 
-local WORLDSOUND_STYLE            = {}
+module.styles.UNKNOWN = styles.create {
 
-WORLDSOUND_STYLE.LIVING           = basicstyle("#FFEE0050")
-WORLDSOUND_STYLE.UNKNOWN          = basicstyle("#FFffff80", nil, "edge")
-WORLDSOUND_STYLE.HELICOPTER       = basicstyle("#EE00FFAA", Icons.VEHICLE_HELICOPTER, "edge")
-WORLDSOUND_STYLE.APPLIANCE        = basicstyle("#ccddff80", Icons.APPLIANCE_GENERATOR, "electronics-4")
-WORLDSOUND_STYLE.LAUNDRY          = basicstyle("#ccddff80", Icons.APPLIANCE_LAUNDRY, "electronics-3")
-WORLDSOUND_STYLE.VEHICLE_ALARM    = basicstyle("#FF006680", Icons.VEHICLE_CAR_ALERT, "electronics-5")
-WORLDSOUND_STYLE.GUNSHOT          = basicstyle("#EE00FFAA", Icons.OBJECT_PISTOL, "edge")
-WORLDSOUND_STYLE.THUNDER          = basicstyle("#FFEEAAAA", Icons.SYMBOL_BOLT, "edge")
-
-WORLDSOUND_STYLE.FIRE             = styles.create {
-    arc = true,
-    color = color("#ff0000aa"),
-    icon = { which = "symbol-fire" }
+    color = color("#ffffff80"), gradient = "edge"
 }
 
-WORLDSOUND_STYLE.BROADCAST        = styles.create {
-    color = COLORS.BROADCAST,
-    arc = math.pi,
-    icon = {
-        which = Icons.SYMBOL_WAVEFORM,
-        color = color("#FFFFFFFF"),
-    },
+module.styles.HELICOPTER = styles.create {
+    color = opts:getconfiguredcolor("WorldHelicopter"),
+    icon = Icons.VEHICLE_HELICOPTER,
+    gradient = "edge"
+}
+
+module.styles.APPLIANCE = styles.create {
+    color = opts:getconfiguredcolor("WorldAppliance"),
+    icon = Icons.APPLIANCE_GENERATOR,
     gradient = "electronics-4"
 }
 
-WORLDSOUND_STYLE.HOUSE_ALARM      = styles.basic {
-    color = COLORS.HOUSE_ALARM,
-    arc = math.pi,
-    icon = { which = "alarm-bang" }
+
+module.styles.LAUNDRY = styles.create {
+    color = opts:getconfiguredcolor("WorldAppliance"),
+    icon = Icons.APPLIANCE_LAUNDRY,
+    gradient = "electronics-3"
 }
 
-module.styles                     = WORLDSOUND_STYLE
+module.styles.VEHICLE_ALARM = styles.create {
+    color = opts:getconfiguredcolor("VehicleAlarm"),
+    icon = Icons.VEHICLE_CAR_ALERT,
+    gradient = "electronics-5"
+}
 
-local WORLDSOUND_CLASSIFIERS      = {}
+module.styles.GUNSHOT = styles.create {
+    color = opts:getconfiguredcolor("WorldGunfire"),
+    icon = Icons.OBJECT_PISTOL,
+    gradient = "edge"
+}
 
-WORLDSOUND_CLASSIFIERS.UNKNOWN    = classifier {
+module.styles.THUNDER = styles.create {
+    color = opts:getconfiguredcolor("WorldThunder"),
+    icon = Icons.SYMBOL_BOLT,
+    gradient = "edge"
+}
+
+module.styles.FIRE = styles.create {
+    color = opts:getconfiguredcolor("WorldFire"),
+    icon = { which = "symbol-fire" }
+}
+
+module.styles.BROADCAST = styles.create {
+    color = opts:getconfiguredcolor("WorldElectronics"),
+    arc = math.pi,
+    icon = Icons.SYMBOL_WAVEFORM,
+    gradient = "electronics-4"
+}
+
+module.styles.HOUSE_ALARM = styles.basic {
+    color = opts:getconfiguredcolor("WorldAlarm"),
+    arc = math.pi,
+    icon = "alarm-bang"
+}
+
+module.classifier.UNKNOWN = classifier {
     discriminator = taggers.positional("unknown"),
-    style = WORLDSOUND_STYLE.UNKNOWN,
+    style = module.styles.UNKNOWN,
     duration = 5
 }
 
-WORLDSOUND_CLASSIFIERS.HELICOPTER = classifier {
-    discriminator = function()
-        return "helicopter" --
-    end,
-    style = WORLDSOUND_STYLE.HELICOPTER,
+module.classifier.ISOOBJECT = module.classifier.UNKNOWN
+
+module.classifier.HELICOPTER = classifier {
+    discriminator = function() return "helicopter" end,
+    style = module.styles.HELICOPTER,
     duration = 60
 }
 
-WORLDSOUND_CLASSIFIERS.THUNDER    = classifier {
-    discriminator = function()
-        return "thunder" --
-    end,
-    style = WORLDSOUND_STYLE.THUNDER,
+module.classifier.THUNDER = classifier {
+    discriminator = function() return "thunder" end,
+    style = module.styles.THUNDER,
     duration = 10
 }
 
-WORLDSOUND_CLASSIFIERS.GUNSHOT    = classifier {
-    discriminator = function()
-        return "gunshot" --
-    end,
-    style = WORLDSOUND_STYLE.GUNSHOT,
+module.classifier.GUNSHOT = classifier {
+    discriminator = function() return "gunshot" end,
+    style = module.styles.GUNSHOT,
     duration = 10
 }
 
-WORLDSOUND_CLASSIFIERS.ISOFIRE    = classifier {
+module.classifier.ISOFIRE = classifier {
     discriminator = taggers.positional("fire"),
-    style = WORLDSOUND_STYLE.FIRE,
+    style = module.styles.FIRE,
     duration = 10
 }
 
-
-WORLDSOUND_CLASSIFIERS.ZOMBIE = classifier {
+module.classifier.ZOMBIE = classifier {
     discriminator = taggers.uid,
-    style = WORLDSOUND_STYLE.LIVING,
+    style = module.styles.LIVING,
     duration = 1
 }
 
-WORLDSOUND_CLASSIFIERS.WINDOW_SMASHED = classifier {
+module.classifier.WINDOW_SMASHED = classifier {
     discriminator = taggers.uid,
     style = styles.basic {
-        arc = true,
+        arc = 1,
         color = color(1.0, 0.25, 0.1),
-        icon = { which = "symbol-glass-break" }
+        icon = "symbol-glass-break"
     },
     duration = 5
 }
 
-WORLDSOUND_CLASSIFIERS.THUMP = classifier {
+module.classifier.THUMP = classifier {
     discriminator = taggers.nsuid("thump"),
     duration = 1,
     style = styles.basic {
-        color = COLORS.THUMP,
-        arc = true,
-        icon = { which = "object-fence" }
+        arc = 2,
+        color = opts:getconfiguredcolor("WorldThump"),
+        icon = "object-fence",
     }
 }
 
-WORLDSOUND_CLASSIFIERS.THUMP_DOOR = classifier {
+module.classifier.THUMP_DOOR = classifier {
     discriminator = taggers.nsuid("thump"),
     duration = 1,
     style = styles.basic {
-        color = COLORS.THUMP,
-        arc = true,
-        icon = { which = "object-door" }
+        arc = 2,
+        color = opts:getconfiguredcolor("WorldThump"),
+        icon = "object-door",
     }
 }
 
-WORLDSOUND_CLASSIFIERS.THUMP_GARAGE = classifier {
+module.classifier.THUMP_GARAGE = classifier {
     discriminator = taggers.nsuid("thump"),
     duration = 1,
     style = styles.basic {
-        color = COLORS.THUMP,
-        arc = true,
-        icon = { which = "object-door-garage" }
+        arc = 2,
+        color = opts:getconfiguredcolor("WorldThump"),
+        icon = "object-door-garage",
     }
 }
 
-WORLDSOUND_CLASSIFIERS.THUMP_WINDOW = classifier {
+module.classifier.THUMP_WINDOW = classifier {
     discriminator = taggers.nsuid("thump"),
     duration = 1,
     style = styles.basic {
-        color = COLORS.THUMP,
-        arc = true,
-        icon = { which = "object-window" }
+        arc = 2,
+        color = opts:getconfiguredcolor("WorldThump"),
+        icon = "object-window",
     }
 }
 
-WORLDSOUND_CLASSIFIERS.ISOANIMAL = classifier {
+module.classifier.THUMP_FENCE = classifier {
+    discriminator = taggers.nsuid("thump"),
+    duration = 1,
+    style = styles.basic {
+        arc = 2,
+        color = opts:getconfiguredcolor("WorldThump"),
+        icon = "object-fence",
+    }
+}
+
+module.classifier.ISOANIMAL = classifier {
     duration = 1,
     discriminator = taggers.uid,
-    style = WORLDSOUND_STYLE.LIVING
+    style = module.styles.LIVING
 }
 
-WORLDSOUND_CLASSIFIERS.ISOPLAYER = classifier {
+module.classifier.ISOPLAYER = classifier {
     duration = 1,
     discriminator = taggers.uid,
-    style = WORLDSOUND_STYLE.LIVING
+    style = module.styles.LIVING
 }
 
-WORLDSOUND_CLASSIFIERS.ISOSURVIVOR = classifier {
+module.classifier.ISOSURVIVOR = classifier {
     duration = 1,
     discriminator = taggers.uid,
-    style = WORLDSOUND_STYLE.LIVING
+    style = module.styles.LIVING
 }
 
-WORLDSOUND_CLASSIFIERS.ALARM = classifier {
+module.classifier.ALARM = classifier {
     duration = 5,
     discriminator = taggers.positional("alarm"),
-    style = WORLDSOUND_STYLE.HOUSE_ALARM
+    style = module.styles.HOUSE_ALARM
 }
 
-WORLDSOUND_CLASSIFIERS.ISOTELEVISION = classifier {
+module.classifier.ISOTELEVISION = classifier {
     duration = 10,
     discriminator = taggers.positional("broadcast"),
-    style = WORLDSOUND_STYLE.BROADCAST
+    style = module.styles.BROADCAST
 }
 
-WORLDSOUND_CLASSIFIERS.ISORADIO = classifier {
+module.classifier.ISORADIO = classifier {
     duration = 10,
     discriminator = taggers.positional("broadcast"),
-    style = WORLDSOUND_STYLE.BROADCAST
+    style = module.styles.BROADCAST
 }
 
-WORLDSOUND_CLASSIFIERS.ISOOBJECT = WORLDSOUND_CLASSIFIERS.UNKNOWN
-
--- classifier {
---     duration = 10,
---     discriminator = taggers.positional("appliance"),
---     style = WORLDSOUND_STYLE.
--- }
-
-WORLDSOUND_CLASSIFIERS.CLOTHINGDRYERLOGIC = classifier {
+module.classifier.CLOTHINGDRYERLOGIC = classifier {
     duration = 10,
     discriminator = taggers.positional("appliance"),
-    style = WORLDSOUND_STYLE.LAUNDRY
+    style = module.styles.LAUNDRY
 }
 
-WORLDSOUND_CLASSIFIERS.CLOTHINGWASHERLOGIC = classifier {
+module.classifier.CLOTHINGWASHERLOGIC = classifier {
     duration = 10,
     discriminator = taggers.positional("appliance"),
-    style = WORLDSOUND_STYLE.LAUNDRY
+    style = module.styles.LAUNDRY
 }
-
-module.classifier = WORLDSOUND_CLASSIFIERS
-
-
 
 return module

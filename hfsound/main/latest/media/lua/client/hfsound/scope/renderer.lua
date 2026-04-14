@@ -9,9 +9,21 @@ local drawTexture = hfgfx.drawTexture
 local Gradients = require('hfsound/gradients')
 local Icons = require('hfsound/icons')
 
+local options = require("hfsound/options/options")
+local opt = options.get_options()
 
-local PI = 3.141592653589793
-local TAU = 2 * PI
+
+local PI    = 3.141592653589793
+local TAU   = 2 * PI
+
+local cos   = math.cos
+local sin   = math.sin
+local min   = math.min
+local max   = math.max
+local rad   = math.rad
+local floor = math.floor
+local ceil  = math.ceil
+
 
 ---@class (partial) hfs.ScopeRenderer
 ---@field icons { [hfs.Icon]: Texture }
@@ -20,8 +32,7 @@ local ScopeRenderer = { Icons = Icons, Gradients = Gradients }; ScopeRenderer.__
 
 ---@class hfs.ScopeRenderer.Kwargs
 ---@field player? integer
----@field quality? number `default := 1 / math.rad(10)`
----@field segment_limit? integer `default := 24`
+
 
 ---@param kw hfs.ScopeRenderer.Kwargs
 function ScopeRenderer.new(kw)
@@ -53,10 +64,12 @@ function ScopeRenderer.new(kw)
     obj.m_player_screen_y = 0.0
     obj.m_t = os.time()
 
-    obj.unitAngle = math.rad(10)
+    obj.unitAngle = rad(10)
 
-    obj.m_quality_limit = kw.segment_limit or 30
-    obj.m_quality = kw.quality or 1 / math.rad(360 / obj.m_quality_limit)
+    ---@type integer
+    obj.m_quality_limit = 30
+    ---@type number
+    obj.m_quality = 1 / rad(360 / obj.m_quality_limit)
 
     obj.m_player_index = kw.player or 0
     obj.m_indicator_height = 0.5
@@ -69,10 +82,21 @@ function ScopeRenderer:update()
     local p = getSpecificPlayer(playerIndex)
 
     self.m_zoom = getCore():getZoom(playerIndex)
+    self.m_invzoom = 1 / self.m_zoom
+
+    self.m_indicator_height_zoomed = self.m_indicator_height * self.m_invzoom
+
     self.m_player = p
     self.m_player_screen_x = isoToScreenX(0, p:getX(), p:getY(), p:getZ())
     self.m_player_screen_y = isoToScreenY(0, p:getX(), p:getY(), p:getZ())
     self.m_t = os.time()
+
+    self:update_quality()
+end
+
+function ScopeRenderer:update_quality()
+    self.m_quality_limit = floor(opt.options.quality:getValue())
+    self.m_quality = 1 / rad(360 / self.m_quality_limit)
 end
 
 -- local function segment_corner(_theta, _radius)
@@ -81,7 +105,7 @@ end
 
 function ScopeRenderer:calculate_steps(radius, length)
     local rawsteps = self.m_quality * length / radius
-    local steps    = math.min(self.m_quality_limit, math.max(1, math.ceil(rawsteps)))
+    local steps    = min(self.m_quality_limit, max(1, ceil(rawsteps)))
     return steps
 end
 
@@ -106,18 +130,18 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
         gradient_texture = gradient
     end
 
-    local inner_angle = math.min(TAU, length / r1)
+    local inner_angle = min(TAU, length / r1)
     if inner_angle < 0.1 then return end
 
-    local sx     = self.m_player_screen_x
-    local sy     = self.m_player_screen_y
-    local zoom   = self.m_zoom
-    local height = self.m_indicator_height / zoom
+    local sx      = self.m_player_screen_x
+    local sy      = self.m_player_screen_y
+    local invzoom = self.m_invzoom
+    local height  = self.m_indicator_height_zoomed
 
 
-    local inner_radius     = r2 / zoom
-    local outer_radius     = r1 / zoom
-    local half_inner_angle = inner_angle / 2.0
+    local inner_radius     = r2 * invzoom
+    local outer_radius     = r1 * invzoom
+    local half_inner_angle = inner_angle * 0.5
     local from             = theta - half_inner_angle
     local to               = theta + half_inner_angle
 
@@ -133,9 +157,17 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
     local tex_u_1 = 0.5
     local tex_u_2 = 0.5
 
+    local renderer = getRenderer()
+    local renderPoly = renderer.renderPoly
+    ---@cast renderPoly hfs.Function_RenderPolyQuadUV
+
+    local theta_2 = from
+    local sin_theta_2 = sin(from)
+    local cos_theta_2 = cos(from)
+
     for i = 0, steps - 1 do
-        local theta_1 = from + i * delta
-        local theta_2 = theta_1 + delta
+        local theta_1 = theta_2 -- or from + i * delta
+        theta_2 = theta_1 + delta
 
         if vary_alpha then
             -- sweep the u-coordinate across the texture
@@ -161,36 +193,37 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
         -- x3, y3 = project_isometricoff(x3, y3, height, 0, playerX, playerY)
         -- x4, y4 = project_isometricoff(x4, y4, height, 0, playerX, playerY)
 
-        local sin_theta_1 = math.sin(theta_1)
-        local sin_theta_2 = math.sin(theta_2)
-        local cos_theta_1 = math.cos(theta_1)
-        local cos_theta_2 = math.cos(theta_2)
+        local sin_theta_1 = sin_theta_2
+        sin_theta_2 = sin(theta_2)
+        local cos_theta_1 = cos_theta_2
+        cos_theta_2 = cos(theta_2)
+
+        -- local sin_theta_1 = sin(theta_1)
+        -- sin_theta_2 = sin(theta_2)
+        -- local cos_theta_1 = cos(theta_1)
+        -- cos_theta_2 = cos(theta_2)
 
         local x1, y1 = project_isooff(
             inner_radius * cos_theta_1, inner_radius * sin_theta_1,
             height,
-            0,
             sx, sy
         )
 
         local x2, y2 = project_isooff(
             outer_radius * cos_theta_1, outer_radius * sin_theta_1,
             height,
-            0,
             sx, sy
         )
 
         local x3, y3 = project_isooff(
             outer_radius * cos_theta_2, outer_radius * sin_theta_2,
             height,
-            0,
             sx, sy
         )
 
         local x4, y4 = project_isooff(
             inner_radius * cos_theta_2, inner_radius * sin_theta_2,
             height,
-            0,
             sx, sy
         )
 
@@ -202,7 +235,7 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
         -- of the rendered triangles in affine space. There may be a way to
         -- mitigate this by manipulating the transformation matrix.
         if i % 2 == 0 then
-            getRenderer():renderPoly(gradient_texture,
+            renderPoly(renderer, gradient_texture,
                 x2, y2,
                 x3, y3,
                 x4, y4,
@@ -214,7 +247,7 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
                 tex_u_1, 1
             )
         else
-            getRenderer():renderPoly(gradient_texture,
+            renderPoly(renderer, gradient_texture,
                 x1, y1,
                 x2, y2,
                 x3, y3,

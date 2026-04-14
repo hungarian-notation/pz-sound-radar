@@ -3,7 +3,6 @@ local defs = require('hfsound/worldsound/_impl/_definitions')
 
 local module = {}
 
-
 ---@param ws hfs.WorldSound<IsoZombie>
 ---@return hfs.WSClassifier
 function module.classify_zombie(ws)
@@ -30,15 +29,19 @@ function module.classify_zombie(ws)
         end
 
         if instanceof(target, "IsoThumpable") then
-            -- FIXME: fence icon
+            -- TODO are fences the only other thumpable?
+            return defs.classifier.THUMP_FENCE
         end
 
         return defs.classifier.THUMP
     else
+        if getDebug() then
+            print("ZOMBIE WORLD SOUND OTHER THAN THUMP?")
+        end
+
         return defs.classifier.ZOMBIE
     end
 end
-
 
 ---@param ws hfs.WorldSound<nil> | hfs.WorldSound<nil> & { player: IsoPlayer }
 function module.classify_null(ws)
@@ -46,28 +49,29 @@ function module.classify_null(ws)
     local volume = ws.volume
     local x, y, z = ws.x, ws.y, ws.z
 
-    print(string.format("null world sound: %f, %f, %f; radius=%f; volume=%f", x, y, z, radius, volume))
+    -- print(string.format("null world sound: %f, %f, %f; radius=%f; volume=%f", x, y, z, radius, volume))
 
-    if ws.player then
-        local player = ws.player
-        local px = player:getX()
-        local py = player:getY()
-        local distance = IsoUtils.DistanceTo(x, y, px, py)
-        print(string.format("    player at: %f", distance))
-    end
+    -- if ws.player then
+    -- local player = ws.player
+    -- local px = player:getX()
+    -- local py = player:getY()
+    -- local pz = player:getZ()
+    -- local distance = IsoUtils.DistanceTo(x, y, z, px, py, pz)
+    -- print(string.format("    player at: %f", distance))
+    -- end
 
     if radius == 500 and volume == 500 then
-        print("    returning HELICOPTER")
+        -- print("    returning HELICOPTER")
         return defs.classifier.HELICOPTER
     end
 
     if radius == 600 and volume == 600 then
-        print("    returning GUNSHOT")
+        -- print("    returning GUNSHOT")
         return defs.classifier.GUNSHOT
     end
 
     if radius == 5000 and volume == 5000 then
-        print("    returning THUNDER")
+        -- print("    returning THUNDER")
         return defs.classifier.THUNDER
     end
 
@@ -79,7 +83,7 @@ function module.classify_null(ws)
         local window = square:getWindow()
 
         if window ~= nil and items:size() == 0 and specials:size() == 0 then
-            print("    returning WINDOW_SMASHED")
+            -- print("    returning WINDOW_SMASHED")
             return defs.classifier.WINDOW_SMASHED
         end
     end

@@ -15,8 +15,6 @@ function HFSOUND.reload()
         reloadLuaFile(string.format("media/lua/shared/%s.lua", rpath))
     end
 
-    --TODO
-
     reload_shared("generated/hfsound_gradients")
     reload_shared("generated/hfsound_icons")
     reload_client("hfsound/tuning")

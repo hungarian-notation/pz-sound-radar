@@ -92,7 +92,14 @@ function module.renderstyle(style, kw)
             -- end
         end
 
-        local r, g, b, a      = style.m_color:compute(kw)
+        local r, g, b, a
+
+        if kw.transbuilding then
+            r, g, b, a = style.m_color_desaturated:compute(kw)
+        else
+            r, g, b, a = style.m_color:compute(kw)
+        end
+
         local adjusted_arclen = math.min(TAU, arclen)
 
         ctx.renderer:renderArc(style.m_gradient, r1, r2, theta, adjusted_arclen, r, g, b, a * alpha_multiplier)

@@ -94,9 +94,6 @@ function ZombieSoundSimulator:simulate(zombie)
         local roll = ZombRandFloat(0, 1)
 
         if roll < chance then
-            -- TODO: preliminary filtering to ensure zombie is within range
-            --       of the player
-
             self.m_scope:offerzombiesound(zombie:getUID(), sound, zombie)
         end
     end

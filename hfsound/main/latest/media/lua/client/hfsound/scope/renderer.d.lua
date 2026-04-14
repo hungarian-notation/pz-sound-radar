@@ -1,0 +1,1 @@
+---@alias hfs.Function_RenderPolyQuadUV fun (self:SpriteRenderer, tex:Texture, x1:number, y1:number, x2:number, y2:number, x3:number, y3:number, x4:number, y4:number, r:number, g:number, b:number, a:number, u1:number, v1:number, u2:number, v2:number, u3:number, v3:number, u4:number, v4:number)

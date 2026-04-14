@@ -1,31 +1,34 @@
 --[[
 
-    This source file is released under the MIT/Expat License. Only files 
+    This source file is released under the MIT/Expat License. Only files
     in which this header appears are covered by this license.
 
     Copyright © 2026 Christopher Bode
 
-    Permission is hereby granted, free of charge, to any person obtaining a 
-    copy of this software and associated documentation files (the “Software”), 
-    to deal in the Software without restriction, including without limitation 
-    the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-    and/or sell copies of the Software, and to permit persons to whom the 
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the “Software”),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
     Software is furnished to do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included 
+    The above copyright notice and this permission notice shall be included
     in all copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --]]
 
 local geom = {}
+
+local cos = math.cos
+local sin = math.sin
 
 ---@param theta number
 ---@param x number
@@ -33,10 +36,10 @@ local geom = {}
 ---@return number
 ---@return number
 function geom.rotate_vector(theta, x, y)
-    local xCos = math.cos(theta) * x;
-    local xSin = math.sin(theta) * x;
-    local yCos = math.cos(theta) * y;
-    local ySin = math.sin(theta) * y;
+    local xCos = cos(theta) * x; -- math.cos(theta) * x;
+    local xSin = sin(theta) * x; -- math.sin(theta) * x;
+    local yCos = cos(theta) * y; -- math.cos(theta) * y;
+    local ySin = sin(theta) * y; -- math.sin(theta) * y;
     local x1 = xCos - ySin;
     local y1 = yCos + xSin;
     return x1, y1
@@ -60,10 +63,10 @@ function geom.rotate_rectangle(theta, dX, dY, offsetX, offsetY)
     if not offsetX then offsetX = 0 end
     if not offsetY then offsetY = 0 end
 
-    local xCos = math.cos(theta) * dX;
-    local xSin = math.sin(theta) * dX;
-    local yCos = math.cos(theta) * dY;
-    local ySin = math.sin(theta) * dY;
+    local xCos = cos(theta) * dX;
+    local xSin = sin(theta) * dX;
+    local yCos = cos(theta) * dY;
+    local ySin = sin(theta) * dY;
 
     local x1 = xCos - ySin;
     local y1 = yCos + xSin;
@@ -91,14 +94,14 @@ end
 ---@param isoX number
 ---@param isoY number
 ---@param isoZ number
----@param cameraZ number
----@param offsetX? number
----@param offsetY? number
+---@param offsetX number
+---@param offsetY number
 ---@return number x
 ---@return number y
-function geom.project_isooffset(isoX, isoY, isoZ, cameraZ, offsetX, offsetY)
-    return isoX * 64 - isoY * 64 + (offsetX or 0),
-        isoY * 32 + isoX * 32 + (cameraZ - isoZ) * 192 + (offsetY or 0)
+function geom.project_isooffset(isoX, isoY, isoZ, offsetX, offsetY)
+    return
+        isoX * 64 - isoY * 64 + offsetX,
+        isoY * 32 + isoX * 32 - isoZ * 192 + offsetY
 end
 
 return geom

@@ -155,8 +155,8 @@ function Runtime:OnTick(_n)
     self.scope:update(multiplied_delta)
 end
 
-function Runtime.EveryOneMinute()
-
+function Runtime:EveryOneMinute()
+    self.scope:everyoneminute()
 end
 
 function Runtime:OnPreUIDraw()

@@ -2,6 +2,7 @@ local Entry         = require('hfsound/scope/entry')
 local ScopeRenderer = require('hfsound/scope/renderer')
 
 local xmath         = require('hfsound/math')
+local dev           = require("hfsound/dev")
 local ilerp         = xmath.ilerp
 local lerp_clamped  = xmath.lerp_clamped
 
@@ -31,6 +32,10 @@ function Scope.new(player)
     obj.m_drawn_entries = 0
     obj.overwhelm = 0.0 --[[@as number]]
     obj.overwhelm_clamped = 0.0
+
+    obj.m_perf_perframe = dev.PerfTimer.new("Scope:Render")
+    obj.m_perf_perentry = dev.PerfTimer.new("Scope:Render:Each")
+    obj.m_perf_peractive = dev.PerfTimer.new("Scope:Render:Each(Active)")
 
     return obj
 end
@@ -218,9 +223,17 @@ function Scope:free_entry()
     return i, entry
 end
 
-function Scope:render()
-    local hearing_transbuilding = HFSOUND.hearing.THROUGH_EXTERIOR_WALL
+function Scope:everyoneminute()
+    if getDebug() then
+        self.m_perf_perframe:report(true)
+        self.m_perf_perentry:report(true)
+        self.m_perf_peractive:report(true)
+    end
+end
 
+function Scope:render()
+    self.m_perf_perframe:enter()
+    local hearing_transbuilding = HFSOUND.hearing.THROUGH_EXTERIOR_WALL
     local context = self:create_context()
     local hearing = context.hearing
 
@@ -236,6 +249,7 @@ function Scope:render()
     local count = 0
 
     for _i, entry in ipairs(self.m_entries) do
+        self.m_perf_perentry:enter()
         if not entry.m_extinct then
             kw.zdiff              = entry.m_z - pz
 
@@ -244,19 +258,26 @@ function Scope:render()
             local distance        = distance_xy + distance_z * 2
             local effectiveRadius = entry.m_radius * hearing
 
-            if entry.m_building_attenuated then
-                local building = entry.m_building
-                if (building ~= player_building) then
-                    effectiveRadius = effectiveRadius * hearing_transbuilding
-                    kw.transbuilding = true
+
+            if distance < effectiveRadius then
+                self.m_perf_peractive:enter()
+
+                if entry.m_building_attenuated then
+                    local building = entry.m_building
+                    if (building ~= player_building) then
+                        effectiveRadius = effectiveRadius * hearing_transbuilding
+                        kw.transbuilding = true
+                    else
+                        kw.transbuilding = false
+                    end
                 else
                     kw.transbuilding = false
                 end
-            else
-                kw.transbuilding = false
-            end
 
-            if distance < effectiveRadius then
+                -- TODO atan2 is expensive
+
+                -- Theoretically, we could refactor this to only pass a
+                -- normalized vector around. The problem is that
                 local theta = math.atan2(entry.m_y - py, entry.m_x - px)
 
                 kw.entry = entry
@@ -266,13 +287,21 @@ function Scope:render()
 
                 entry.m_style.render(entry.m_style, kw)
                 count = count + 1
+
+                self.m_perf_peractive:exit()
             end
         end
 
-        -- TODO: lazily purge tail end of extinct entries
+        -- XXX: Should we do something about old entries?
+        --[[
+            If the player goes into louisville and then leaves, the scope will
+            forever be looping over a tail end of tons of deactivated entries.
+        --]]
+        self.m_perf_perentry:exit()
     end
 
     self.m_drawn_entries = count
+    self.m_perf_perframe:exit()
 end
 
 return Scope

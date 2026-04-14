@@ -20,7 +20,6 @@ local input                = require('cli/input')
 local xtable               = require('hfsound/reflect/tables')
 local xgeom                = require('hfsound/geom')
 local hf_graphics          = require('hfsound/graphics')
--- local ScopeRenderer        = require('hfsound/scope.renderer')
 local Scope                = require('hfsound/scope/scope')
 
 local drawTextureIsometric = hf_graphics.drawTextureIsometric

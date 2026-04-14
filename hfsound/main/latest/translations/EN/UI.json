@@ -1,6 +1,6 @@
 {
   "UI_options_hfsound": {
-    "@": "Sound Visualizer",
+    "Options": "Sound Visualizer Options",
 
 
     "SoundEnable": {

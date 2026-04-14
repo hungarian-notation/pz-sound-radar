@@ -1,4 +1,4 @@
-local optutil = require('hfsound/options/options_wrapper')
+-- local optutil = require('hfsound/options/options_wrapper')
 local confirm = require('hfsound/options/confirm')
 local color = require('hfsound/scope/color')
 
@@ -6,39 +6,38 @@ local color = require('hfsound/scope/color')
 
 ---@enum  hfs.config.Group
 local Group = {
-    Zombie = "Zombie",
-    Living = "Living",
-    World = "World",
+    Zombie  = "Zombie",
+    Living  = "Living",
+    World   = "World",
     Vehicle = "Vehicle",
 }
 
----@enum hfs.config.Sound
+---@enum hfs.ConfigSound
 local Sounds = {
-    ZombieIdle = "ZombieIdle",
-    ZombieStep = "ZombieStep",
-    ZombieClamber = "ZombieClamber",
+    ZombieIdle       = "ZombieIdle",
+    ZombieStep       = "ZombieStep",
+    ZombieClamber    = "ZombieClamber",
     ZombieAggression = "ZombieAggression",
-    ZombieOther = "ZombieOther",
-    LivingPlayer = "LivingPlayer",
-    LivingAnimal = "LivingAnimal",
-    WorldThump = "WorldThump",
-    WorldFire = "WorldFire",
-    WorldAlarm = "WorldAlarm",
-    WorldThunder = "WorldThunder",
-    WorldGunfire = "WorldGunfire",
-    WorldHelicopter = "WorldHelicopter",
+    ZombieOther      = "ZombieOther",
+    LivingPlayer     = "LivingPlayer",
+    LivingAnimal     = "LivingAnimal",
+    WorldThump       = "WorldThump",
+    WorldFire        = "WorldFire",
+    WorldAlarm       = "WorldAlarm",
+    WorldThunder     = "WorldThunder",
+    WorldGunfire     = "WorldGunfire",
+    WorldHelicopter  = "WorldHelicopter",
     WorldElectronics = "WorldElectronics",
-    WorldAppliance = "WorldAppliance",
-    WorldGenerator = "WorldGenerator",
-    VehicleEngine = "VehicleEngine",
-    VehicleAlarm = "VehicleAlarm",
-    VehicleLightbar = "VehicleLightbar",
+    WorldAppliance   = "WorldAppliance",
+    WorldGenerator   = "WorldGenerator",
+    VehicleEngine    = "VehicleEngine",
+    VehicleAlarm     = "VehicleAlarm",
+    VehicleLightbar  = "VehicleLightbar",
 }
 
-local function get_soundinfo()
-    ---@alias _RawOrder { [hfs.config.Group]: hfs.config.Sound[] }
-
-    ---@type _RawOrder
+---@return { info:hfs.ConfigSoundInfo, order:hfs.ConfigSoundOrder }
+local function get_configurable_sounds()
+    ---@type hfs.ConfigSoundOrder
     local order = {
         [Group.Zombie] = {
             Sounds.ZombieIdle,
@@ -69,59 +68,45 @@ local function get_soundinfo()
         }
     }
 
-    ---@class hfs.config.Info
-    ---@field group hfs.config.Group
-    ---@field color hfs.OptionsColor
-    ---@field alpha number
-
-    ---@class hfs.config.InfoConfig
-    ---@field opt_enable umbrella.ModOptions.TickBox
-    ---@field opt_color umbrella.ModOptions.ColorPicker
-    ---@field color_configured hfs.ConfiguredColor
-
-    ---@class hfs.config.FullInfo : hfs.config.Info, hfs.config.InfoConfig
-
-    ---@alias _IncompleteInfo hfs.config.Info & Partial<hfs.config.InfoConfig>
-    ---@alias _RawInfo { [hfs.config.Sound]: hfs.config.FullInfo | _IncompleteInfo}
-
     local Z, L, W, V = Group.Zombie, Group.Living, Group.World, Group.Vehicle
 
-    ---@type _RawInfo
+    ---@type hfs.ConfigSoundInfo
     local info = {
-        [Sounds.ZombieIdle]       = { group = Z, color = "#CCCC66" },
-        [Sounds.ZombieStep]       = { group = Z, color = "#FFFF00" },
-        [Sounds.ZombieClamber]    = { group = Z, color = "#FF9900" },
-        [Sounds.ZombieAggression] = { group = Z, color = "#FF3300" },
-        [Sounds.ZombieOther]      = { group = Z, color = "#ff6633" },
-        [Sounds.LivingPlayer]     = { group = L, color = "#33FFCC" },
-        [Sounds.LivingAnimal]     = { group = L, color = "#00ff66" },
-        [Sounds.WorldThump]       = { group = W, color = "#ff0000" },
-        [Sounds.WorldFire]        = { group = W, color = "#ff0000" },
-        [Sounds.WorldAlarm]       = { group = W, color = "#ff00ff" },
-        [Sounds.WorldThunder]     = { group = W, color = "#ffff99" },
-        [Sounds.WorldGunfire]     = { group = W, color = "#ff00ff" },
-        [Sounds.WorldHelicopter]  = { group = W, color = "#ff00ff" },
-        [Sounds.WorldElectronics] = { group = W, color = "#009999" },
-        [Sounds.WorldAppliance]   = { group = W, color = "#cccccc" },
-        [Sounds.WorldGenerator]   = { group = W, color = "#cccccc" },
-        [Sounds.VehicleEngine]    = { group = V, color = "#cccccc" },
-        [Sounds.VehicleAlarm]     = { group = V, color = "#ff00ff" },
-        [Sounds.VehicleLightbar]  = { group = V, color = "#cccccc" },
+        [Sounds.ZombieIdle]       = { group = Z, color = "#CCCC66", style = "breathe" },
+        [Sounds.ZombieStep]       = { group = Z, color = "#FFFF00", style = "normal" },
+        [Sounds.ZombieClamber]    = { group = Z, color = "#FF9900", style = "normal" },
+        [Sounds.ZombieAggression] = { group = Z, color = "#FF3300", style = "normal" },
+        [Sounds.ZombieOther]      = { group = Z, color = "#ff6633", style = "normal" },
+        [Sounds.LivingPlayer]     = { group = L, color = "#33FFCC", style = "normal" },
+        [Sounds.LivingAnimal]     = { group = L, color = "#00ff66", style = "normal" },
+        [Sounds.WorldThump]       = { group = W, color = "#ff0000", style = "flash" },
+        [Sounds.WorldFire]        = { group = W, color = "#ff0000", style = "normal" },
+        [Sounds.WorldAlarm]       = { group = W, color = "#ff00ff", style = "flash" },
+        [Sounds.WorldThunder]     = { group = W, color = "#ffff99", style = "normal" },
+        [Sounds.WorldGunfire]     = { group = W, color = "#ff00ff", style = "normal" },
+        [Sounds.WorldHelicopter]  = { group = W, color = "#ff00ff", style = "normal" },
+        [Sounds.WorldElectronics] = { group = W, color = "#009999", style = "flicker" },
+        [Sounds.WorldAppliance]   = { group = W, color = "#cccccc", style = "normal" },
+        [Sounds.WorldGenerator]   = { group = W, color = "#cccccc", style = "normal" },
+        [Sounds.VehicleEngine]    = { group = V, color = "#cccccc", style = "normal" },
+        [Sounds.VehicleAlarm]     = { group = V, color = "#ff00ff", style = "flash" },
+        [Sounds.VehicleLightbar]  = { group = V, color = "#cccccc", style = "flash" },
     }
 
     if getDebug() then
         -- Validate some basic assetions about the data to make sure we haven't
-        -- messed up entering it.
+        -- messed up entering it, but only if the game is in debug mode.
 
-        ---@type {[hfs.config.Sound]:bool}
+        ---@type {[hfs.ConfigSound]:bool}
         local found = {}
 
-        for k, o in pairs(order) do
-            for _, v in ipairs(o) do
-                found[v] = true
-                assert(Sounds[v] == v)
-                assert(info[v] ~= nil, tostring(v))
-                assert(info[v].group == k)
+        for soundgroup, soundgroup_order in pairs(order) do
+            for _, sound in ipairs(soundgroup_order) do
+                found[sound] = true
+                assert(Sounds[sound] == sound, "non-identity: " .. Sounds[sound] .. " vs " .. sound)
+                assert(info[sound] ~= nil, "no info: " .. tostring(sound))
+                assert(info[sound].group == soundgroup)
+                assert(info[sound].style ~= nil)
             end
         end
 
@@ -139,82 +124,107 @@ end
 ---@class hfs.Options
 local HfSoundOptions = {}; HfSoundOptions.__index = HfSoundOptions
 
+---@param name string
+---@param ... any
+local function t_option(name, ...)
+    return string.format("UI_options_%s_%s", "hfsound", string.format(name, ...))
+end
+
+---@param name string
+local function kt_option(name)
+    return name, string.format("UI_options_%s_%s", "hfsound", name)
+end
+
+---@overload fun(string:string): string, string
+---@overload fun<T1>(string:string, a1: T1): string, string, T1
+---@overload fun<T1,T2>(string:string, a1: T1, a2: T2): string, string, T1, T2
+---@overload fun<T1,T2,T3>(string:string, a1: T1, a2: T2, a3: T3): string, string, T1, T2, T3
+---@overload fun<T1,T2,T3,T4>(string:string, a1: T1, a2: T2, a3: T3, a4: T4): string, string, T1, T2, T3, T4
+---@overload fun<T1,T2,T3,T4,T5>(string:string, a1: T1, a2: T2, a3: T3, a4: T4, a4: T5): string, string, T1, T2, T3, T4, T5
+---@generic T
+---@param name string
+---@param ... T
+local function option_args(name, ...)
+    -- Not sure why, but my LSP needs the overloads to be happy.
+    return name, string.format("UI_options_%s_%s", "hfsound", name), ...
+end
 
 ---@return hfs.Options
 function HfSoundOptions.new()
-    local obj = setmetatable({}, HfSoundOptions)
+    local obj             = setmetatable({}, HfSoundOptions)
 
     ---@type { listener:Callback_OnConfigChanged, target: any }[]
-    obj.listeners = {}
+    obj.listeners         = {}
 
-    obj._onconfigapply = function(...) obj:broadcast(...) end
+    obj._onconfigapply    = function(...) obj:broadcast(...) end
 
-    local soundinfo = get_soundinfo()
-    local _sound_order = soundinfo.order
-    local _sound_info = soundinfo.info
+    local soundinfo       = get_configurable_sounds()
+    local _sound_order    = soundinfo.order
+    local _sound_info     = soundinfo.info
+    local wrapped         = PZAPI.ModOptions:create(kt_option "Options")
 
-    local opt = optutil.options("hfsound")
-    local wrapped = opt.opt
-
-    ---@cast wrapped +{ onChange: fun(), onChangeApply:fun() }
-
+    -- This isn't injection, umbrella's types are just inacurate in this corner of the api.
+    ---@diagnostic disable-next-line: inject-field
     wrapped.onChangeApply = obj._onconfigapply
 
-    local options = {
+    local options         = {
         sounds = {},
-        ---@type hfs.TaggedColorPicker[]
+        ---@type hfs.ColorPickerWithDefault[]
         colors = {}
     }
 
-    opt:addTitle("Display")
-    options.quality = opt:addSlider("DisplayQuality", 10, 50, 1, 30)
-    options.indicator_limit = opt:addSlider("DisplayLimit", 20, 60, 1, 40)
-    opt:addSmallSeparator()
+    wrapped:addTitle(t_option "Display")
+    options.quality         = wrapped:addSlider(option_args("DisplayQuality", 10, 50, 1, 30))
+    options.indicator_limit = wrapped:addSlider(option_args("DisplayLimit", 20, 60, 1, 40))
 
-    opt:addTitle("SoundEnable")
-    for g, arr in pairs(_sound_order) do
-        opt:addTitle(string.format("SoundEnable%s", g))
-        for _, s in ipairs(arr) do
-            local info = _sound_info[s]
-            info.opt_enable = opt:addTickBox(string.format("SoundEnable%s", s), true, false)
-            options.sounds[s] = { enable = info.opt_enable }
+    wrapped:addTitle(t_option "SoundEnable")
+    for soundgroup, arr in pairs(_sound_order) do
+        wrapped:addTitle(t_option("SoundEnable%s", soundgroup))
+        for _, sound in ipairs(arr) do
+            local info            = _sound_info[sound]
+            info.opt_enable       = wrapped:addTickBox(option_args("SoundEnable" .. sound, true))
+            options.sounds[sound] = { enable = info.opt_enable }
         end
     end
 
-    opt:addSmallSeparator()
-    opt:addTitle("SoundColor")
-
-    for g, arr in pairs(_sound_order) do
-        opt:addTitle(string.format("SoundColor%s", g))
-        for _, s in ipairs(arr) do
-            local info = _sound_info[s]
-            info.opt_color = opt:addColorPicker(string.format("SoundColor%s", s), info.color, false)
-            options.sounds[s].color = info.opt_color
+    wrapped:addTitle(t_option "SoundColor")
+    for soundgroup, soundgroup_sounds in pairs(_sound_order) do
+        wrapped:addTitle(t_option("SoundColor" .. soundgroup))
+        for _, soundtype in ipairs(soundgroup_sounds) do
+            local info = _sound_info[soundtype]
+            local r, g, b = color.parse(info.color)
+            ---@class hfs.XColorPicker : umbrella.ModOptions.ColorPicker
+            info.opt_color = wrapped:addColorPicker(option_args("SoundColor" .. soundtype, r, g, b, 1))
+            info.opt_color.defaultColor = { r = r, g = g, b = b, a = 1 }
+            options.sounds[soundtype].color = info.opt_color
             table.insert(options.colors, info.opt_color)
-            info.color_configured = color.ConfiguredColor.new {
+            info.colorobject = color.ConfiguredColor.new({
+                style = info.style,
                 config = obj,
-                sound = s,
                 option = info.opt_color,
                 alpha = info.alpha or 0.5,
                 saturation = 1.0,
-            }
+            })
         end
     end
 
-    ---@cast _sound_info { [hfs.config.Sound]: hfs.config.FullInfo }
-    obj.order = _sound_order
-    obj.info = _sound_info
+    obj._btn_reset = wrapped:addButton(option_args("ResetColorsButton",
+        "UI_options_tooltip_hfsound_ResetColorsButton",
+        obj._promptresetcolors, obj))
 
-    obj.sounds = _sound_info
-    obj.button_resetcolors = opt:addButton("ResetColorsButton", true, obj._promptresetcolors, obj)
-    obj.options = options
-    obj.opt = opt
+    ---@cast _sound_info { [hfs.ConfigSound]: hfs.ConfigSoundInfo.Complete }
+
+    obj.order      = _sound_order
+    obj.info       = _sound_info
+    obj.sounds     = _sound_info
+    obj.options    = options
+
     return obj
 end
 
----@param sound hfs.config.Sound
+---@param sound hfs.ConfigSound
 function HfSoundOptions:getconfiguredcolor(sound)
-    return self.info[sound].color_configured
+    return self.info[sound].colorobject
 end
 
 function HfSoundOptions:broadcast(...)
@@ -242,6 +252,7 @@ end
 
 function HfSoundOptions:_resetcolors()
     for _, option in ipairs(self.options.colors) do
+        assert(option.defaultcolor ~= nil)
         option:setValue(option.defaultcolor)
     end
 

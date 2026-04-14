@@ -18,26 +18,26 @@ local function constant(v) return function(...) return v end end
 -- #region hfs.BasicStyle
 
 ---@class (partial) hfs.BasicStyle : hfs.Style
----@field m_icon boolean
----@field m_iconload? hfs.Icon
+---@field m_icon         boolean
+---@field m_arc          boolean
+---@field m_iconload?    hfs.Icon
 ---@field m_icontexture? Texture
----@field m_iconscale hfs.StyleClosure<number>
----@field m_iconcolor hfs.Color
----@field m_arc boolean
----@field m_arclen hfs.StyleClosure<number>
----@field m_color hfs.Color
+---@field m_iconscale    hfs.StyleClosure<number>
+---@field m_iconcolor    hfs.Color
+---@field m_arclen       hfs.StyleClosure<number>
+---@field m_color        hfs.Color
 local Basic = { render = impl.renderstyle }; Basic.__index = Basic
 
 ---@class hfs.BasicStyle.Kwargs.Icon
----@field which         Texture | hfs.Icon
----@field scale?        number
----@field color?        hfs.Color
+---@field which          Texture | hfs.Icon
+---@field scale?         number
+---@field color?         hfs.Color
 
 ---@class hfs.BasicStyle.Kwargs
----@field color?        hfs.Color,
----@field arc?          number | boolean,
----@field gradient?     hfs.Gradient,
----@field icon?         hfs.BasicStyle.Kwargs.Icon
+---@field color?         hfs.Color,
+---@field arc?           number | boolean,
+---@field gradient?      hfs.Gradient,
+---@field icon?          hfs.Icon | hfs.BasicStyle.Kwargs.Icon
 
 ---@param kw hfs.BasicStyle.Kwargs
 function Basic.new(kw)
@@ -49,7 +49,9 @@ function Basic.new(kw)
         obj.m_color = simple_color.new(1.0, 0.75, 0.0, 1.0)
     end
 
-    if type(kw.arc) == "boolean" and kw.arc == true then
+    obj.m_color_desaturated = obj.m_color:desaturate(0.5)
+
+    if (type(kw.arc) == "nil") or (type(kw.arc) == "boolean" and kw.arc == true) then
         obj.m_arc = true
         obj.m_arclen = constant(2.09433) -- 2 * math.pi / 3
         obj.m_gradient = kw.gradient or "normal"
@@ -58,6 +60,7 @@ function Basic.new(kw)
         obj.m_arclen = constant(kw.arc)
         obj.m_gradient = kw.gradient or "normal"
     else
+        if getDebug() then error("illegal state") end
         obj.m_arc = false
         obj.m_arclen = constant(0)
     end
@@ -69,22 +72,34 @@ function Basic.new(kw)
         obj.m_iconload = nil
         obj.m_iconscale = constant(0.5)
         obj.m_iconcolor = simple_color.new(1, 1, 1, 1)
-    elseif type(icon.which) == "string" then
-        ---@cast icon.which hfs.Icon
+        obj.m_icon = false
+    elseif type(icon) == "string" then
+        ---@cast icon hfs.Icon
         obj.m_icon = true
         obj.m_icontexture = nil
-        obj.m_iconload = icon.which --[[@as hfs.Icon | nil]]
-        obj.m_iconscale = constant(icon.scale or 0.5)
-        obj.m_iconcolor = icon.color or simple_color.new(1, 1, 1, 1)
-    elseif instanceof(icon.which, "Texture") then
-        ---@cast icon.which Texture
-        obj.m_icon = true
-        obj.m_icontexture = icon.which
-        obj.m_iconload = nil
-        obj.m_iconscale = constant(icon.scale or 0.5)
-        obj.m_iconcolor = icon.color or simple_color.new(1, 1, 1, 1)
+        obj.m_iconload = icon
+        obj.m_iconscale = constant(0.5)
+        obj.m_iconcolor = simple_color.new(1, 1, 1, 1)
     else
-        obj.m_icon = false
+        ---@cast icon -hfs.Icon
+        if type(icon.which) == "string" then
+            ---@cast icon.which hfs.Icon
+            obj.m_icon = true
+            obj.m_icontexture = nil
+            obj.m_iconload = icon.which --[[@as hfs.Icon | nil]]
+            obj.m_iconscale = constant(icon.scale or 0.5)
+            obj.m_iconcolor = icon.color or simple_color.new(1, 1, 1, 1)
+        elseif instanceof(icon.which, "Texture") then
+            ---@cast icon.which Texture
+            obj.m_icon = true
+            obj.m_icontexture = icon.which
+            obj.m_iconload = nil
+            obj.m_iconscale = constant(icon.scale or 0.5)
+            obj.m_iconcolor = icon.color or simple_color.new(1, 1, 1, 1)
+        else
+            if getDebug() then error("illegal state") end
+            obj.m_icon = false
+        end
     end
 
     return obj
