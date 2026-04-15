@@ -38,48 +38,52 @@ function ReentrantPerfTimer.new(name)
 end
 
 function ReentrantPerfTimer:enter()
-    if getDebug() then
-        self._depth = self._depth + 1
-        if self._depth == 1 then
-            self._entrytime = GameTime.getServerTime()
-        end
+    self._depth = self._depth + 1
+    if self._depth == 1 then
+        self._entrytime = GameTime.getServerTime()
     end
 end
 
 function ReentrantPerfTimer:exit()
-    if getDebug() then
-        self._depth = self._depth - 1
-        if self._depth == 0 then
-            self._entered = true
-            local elapsed = GameTime.getServerTime() - self._entrytime
-            self._total_time = self._total_time + elapsed
-            self._events = self._events + 1
-            if elapsed > self._maxtime then self._maxtime = elapsed end
-        end
+    self._depth = self._depth - 1
+    if self._depth == 0 then
+        self._entered = true
+        local elapsed = GameTime.getServerTime() - self._entrytime
+        self._total_time = self._total_time + elapsed
+        self._events = self._events + 1
+        if elapsed > self._maxtime then self._maxtime = elapsed end
     end
 end
 
 ---@param reset boolean
 function ReentrantPerfTimer:report(reset)
-    if getDebug() then
-        local average = self._total_time / self._events
+    ---@diagnostic disable-next-line: unnecessary-if
+    if HFSOUND and HFSOUND.debug then
+        if HFSOUND.debug.reporting == true or type(HFSOUND.debug.reporting) == "string" and string.match(self._name, HFSOUND.debug.reporting) then
+            local average = self._total_time / self._events
 
-        print("----------------------------------------")
-        print(string.format("perfcounter: %s", self._name))
-        print(string.format("    events     = %d", self._events))
-
-        if self._events > 0 then
-            print(string.format("    total_time = %d millis", math.floor(self._total_time / 1000000)))
-            print(string.format("    average    = %d millis (%d nanos)", math.floor(average / 1000000), average))
-            print(string.format("    max        = %d millis (%d nanos)", math.floor(self._maxtime / 1000000), self._maxtime))
-        end
-
-        if reset then
-            self._total_time = 0
-            self._events     = 0
-            self._maxtime    = 0
+            if self._events > 0 then
+                print(string.format("perf: %32s; average = %.5f ms",
+                    self._name,
+                    average / 1000000
+                ))
+            end
         end
     end
+
+
+
+    if reset then
+        self._total_time = 0
+        self._events = 0
+        self._maxtime = 0
+    end
+end
+
+if not getDebug() then
+    ReentrantPerfTimer.enter = function() end
+    ReentrantPerfTimer.exit = function() end
+    ReentrantPerfTimer.report = function() end
 end
 
 dev.PerfTimer = ReentrantPerfTimer

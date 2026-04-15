@@ -41,7 +41,14 @@ end
 
 function inject_scope.getCore() return inject_scope.Core end
 
-function inject_scope.getDebug() return true end 
+function inject_scope.getDebug() return true end
+
+function inject_scope.isClient() return false end
+
+inject_scope.GameTime = {
+    getServerTimeShiftIsSet = function() return true end,
+    getServerTime = function() return love.timer.getTime() * 1e9 end,
+}
 
 local inject_table = table --[[@as table]]
 

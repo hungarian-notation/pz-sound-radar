@@ -18,7 +18,8 @@ local __Style = {}
 ---@field distance      number
 ---@field radius        number effective radius
 ---@field zdiff         number
----@field transbuilding boolean
+---@field audibility    number
+---@field through_walls boolean
 
 ---@param kw hfs.RenderKwargs
 function __Style:render(kw) end
@@ -28,8 +29,8 @@ function __Style:render(kw) end
 ---@field renderer hfs.ScopeRenderer
 ---@field player IsoPlayer
 ---@field hearing number hearing factor to be multiplied against radius
----@field x number playerX
----@field y number playerY
----@field z number playerZ
+---@field px number playerX
+---@field py number playerY
+---@field pz number playerZ
 ---@field t number time in seconds from some time before the mod was first loaded
 ---@field player_building int?

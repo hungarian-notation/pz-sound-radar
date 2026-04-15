@@ -1,6 +1,7 @@
 -- local optutil = require('hfsound/options/options_wrapper')
 local confirm = require('hfsound/options/confirm')
 local color = require('hfsound/scope/color')
+local tables = require("hfsound/reflect/tables")
 
 -- #region class: HfSoundOptions
 
@@ -149,6 +150,28 @@ local function option_args(name, ...)
     return name, string.format("UI_options_%s_%s", "hfsound", name), ...
 end
 
+
+---@param slider umbrella.ModOptions.Slider
+---@param mapping fun(x:number):number
+---@return hfs.MappedSlider
+local function mapped_slider(slider, mapping)
+    ---@cast slider hfs.MappedSlider
+    local old = slider.onChangeApply
+    slider.onChangeApply = function(self, value)
+        ---@cast self hfs.MappedSlider
+        tables.dump({ onChangeApply = { value } })
+        self.mappedValue = self.mapping(value)
+        if old then
+            old(self, value)
+        end
+    end
+    slider.mappedValue = mapping(slider.value)
+    slider.mapping = mapping
+    return slider
+end
+
+
+
 ---@return hfs.Options
 function HfSoundOptions.new()
     local obj             = setmetatable({}, HfSoundOptions)
@@ -174,8 +197,18 @@ function HfSoundOptions.new()
     }
 
     wrapped:addTitle(t_option "Display")
-    options.quality         = wrapped:addSlider(option_args("DisplayQuality", 10, 50, 1, 30))
-    options.indicator_limit = wrapped:addSlider(option_args("DisplayLimit", 20, 60, 1, 40))
+
+    options.quality    = wrapped:addSlider(option_args("DisplayQuality", 10, 50, 1, 30))
+
+    options.radius_min = wrapped:addSlider(option_args("DisplayRadiusMin", 0.2, 4, 0.2, 1))
+    options.radius_max = wrapped:addSlider(option_args("DisplayRadiusMax", 2, 10, 0.5, 5))
+
+
+    options.radius_bias = mapped_slider(wrapped:addSlider(option_args("DisplayRadiusBias", 0, 1, 0.1, 0.5)),
+        function(x)
+            return math.exp(x * math.log(10))
+        end
+    )
 
     wrapped:addTitle(t_option "SoundEnable")
     for soundgroup, arr in pairs(_sound_order) do
@@ -195,7 +228,7 @@ function HfSoundOptions.new()
             local r, g, b = color.parse(info.color)
             ---@class hfs.XColorPicker : umbrella.ModOptions.ColorPicker
             info.opt_color = wrapped:addColorPicker(option_args("SoundColor" .. soundtype, r, g, b, 1))
-            info.opt_color.defaultColor = { r = r, g = g, b = b, a = 1 }
+            info.opt_color.defaultcolor = { r = r, g = g, b = b, a = 1 }
             options.sounds[soundtype].color = info.opt_color
             table.insert(options.colors, info.opt_color)
             info.colorobject = color.ConfiguredColor.new({

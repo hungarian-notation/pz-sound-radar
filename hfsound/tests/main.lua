@@ -2,26 +2,60 @@
 
 if love == nil then return end
 
+function keepalive(state, detail)
+    if WATCHDOG ~= nil then
+        love.thread.getChannel("watchdog"):push({ state = state, detail = detail, heartbeat = detail.heartbeat })
+    end
+end
+
+function instrument(name, prototype)
+    for k, v in pairs(prototype) do
+        if type(v) == "function" then
+            local fname = string.format("%s.%s", name, k)
+            local fwrapped = v
+            local wrapper = function(...)
+                keepalive(fname, { trace = "enter" })
+                local results = { fwrapped(...) }
+                keepalive(fname, { trace = "exit" })
+                ---@diagnostic disable-next-line: access-invisible
+                return unpack(results)
+            end
+            prototype[k] = wrapper
+        end
+    end
+end
+
 package.path = package.path .. ";../.dist/Contents/mods/hfsound/42.16/media/lua/client/?.lua"
 package.path = package.path .. ";../.dist/Contents/mods/hfsound/42.16/media/lua/shared/?.lua"
+
+require('polyfill/util')
+require('polyfill/renderer')
+require('polyfill/player')
+require('polyfill/pzapi')
 
 HFSOUND = HFSOUND or {}
 require('hfsound/tuning')
 
-local mocks = require('polyfill/mocks')
-require('polyfill/util')
-require('polyfill/renderer')
-require('polyfill/player')
+local mocks         = require('polyfill/mocks')
+
+utf8                = require('utf8')
+local input         = require('cli/input')
+
+local xtable        = require('hfsound/reflect/tables')
+local xmath        = require('hfsound/math')
+local xgeom         = require('hfsound/geom')
+local hf_graphics   = require('hfsound/graphics')
+
+local Scope         = require('hfsound/scope/scope')
+local Entry         = require('hfsound/scope/entry')
+local ScopeRenderer = require('hfsound/scope/renderer')
 
 
-utf8                       = require('utf8')
-local input                = require('cli/input')
+local options = require "hfsound/options"
 
-local xtable               = require('hfsound/reflect/tables')
-local xgeom                = require('hfsound/geom')
-local hf_graphics          = require('hfsound/graphics')
-local Scope                = require('hfsound/scope/scope')
+xtable.dump(options)
 
+--------------------------------------------------------------------------------
 local drawTextureIsometric = hf_graphics.drawTextureIsometric
 
 ---@type hfs.ScopeRenderer
@@ -41,9 +75,16 @@ DEFAULT_HISTORY            = {
     "os.exit()"
 }
 
-
-
 require('hfsound/debug')
+
+--------------------------------------------------------------------------------
+
+
+for i = 1,100,0.5 do 
+
+    print(i, xmath.hyperbola.centerpoint(1,1,10,-10,i))
+
+end
 
 --------------------------------------------------------------------------------
 
@@ -147,7 +188,19 @@ end
 
 --------------------------------------------------------------------------------
 
+
+function now()
+    return love.timer.getTime()
+end
+
+WATCHDOG = nil
+LAST_MINUTE = now()
+
 function love.load()
+    instrument("Scope", Scope)
+    instrument("Entry", Entry)
+    instrument("ScopeRenderer", ScopeRenderer.ScopeRenderer)
+
     love.window.setMode(1600, 900, { resizable = true })
 
     INPUT = input.InputManager.new(on_command, DEFAULT_HISTORY)
@@ -155,22 +208,28 @@ function love.load()
     RENDERER = SCOPE.renderer
 
     love.keyboard.setKeyRepeat(true)
+
+    --  WATCHDOG = love.thread.newThread("watchdog.lua"); WATCHDOG:start()
 end
 
 local zombie_styles = require('hfsound/zombiesound/styles')
 ZOMBIES = {}
 
 function add_zombie(n)
+    -- keepalive("add_zombie", "enter")
+
     n = n or 10
 
     for _i = 1, n do
+        print("adding", _i)
+
         ---@diagnostic disable-next-line: assign-type-mismatch
         ---@type IsoZombie
         local zombie = mocks.IsoMovable.new {
             classes = { "IsoZombie", "IsoMovable" },
             x = math.random(-20, 20),
             y = math.random(-20, 20),
-            z = math.random(-20, 20)
+            z = 0
         }
 
         ---@cast zombie any
@@ -179,9 +238,17 @@ function add_zombie(n)
 
         table.insert(ZOMBIES, zombie)
     end
+
+    -- keepalive("add_zombie", "exit")
 end
 
 function love.update(dt)
+    if LAST_MINUTE < (now() - 5) then
+        LAST_MINUTE = now()
+        SCOPE:everyoneminute()
+    end
+
+    keepalive("love.update", { trace = "enter", heartbeat = true })
     for _i, zombie in ipairs(ZOMBIES) do
         local dx = zombie.goal.x - zombie.x
         local dy = zombie.goal.y - zombie.y
@@ -203,12 +270,13 @@ function love.update(dt)
         end
 
         SCOPE:offerzombiesound(zombie:getUID(), {
-            duration = 10, frequency = 10, radius = 20, volume = 20, style = zombie_styles.FOOTSTEP_STYLE
+            duration = 10, frequency = 10, radius = 8, volume = 20, style = zombie_styles.FOOTSTEP_STYLE, category = "walk"
         }, zombie)
     end
 
     RENDERER:update()
     SCOPE:update(dt)
+    -- keepalive("love.update", "exit")
 end
 
 function love.keypressed(key, _, _)
@@ -225,6 +293,7 @@ TAU = math.pi * 2
 
 -- Draw a coloured rectangle.
 function love.draw()
+    -- keepalive("love.draw", "enter")
     local w, h = love.graphics.getDimensions()
     local cx, cy = w / 2, h / 2
     love.graphics.clear()
@@ -274,6 +343,6 @@ function love.draw()
     love.graphics.line(cx, cy, cx, cy - 192)
 
     SCOPE:render()
-
     INPUT:draw()
+    -- keepalive("love.draw", "exit")
 end

@@ -2,6 +2,27 @@ local module = {}
 
 -- https://docs.google.com/spreadsheets/d/1by0DMd_VuVC3HBs-CaJ1f3UOfa9GDt-ttDgvJz65eO0/view?gid=1008512841
 
+---@alias hfs.StateCategory
+---| "silent"
+---| "idle"
+---| "stumble"
+---| "walk"
+---| "clamber"
+---| "attack"
+
+---@enum hfs.StateCategoryOrdinal
+module.CATEGORIES = {
+    silent  = 1,
+    idle    = 2,
+    stumble = 3,
+    walk    = 4,
+    clamber = 5,
+    attack  = 6,
+}
+
+
+
+
 ---@type { [string]: hfs.StateCategory }
 module.ZOMBIE_STATES = {
     FakeDeadAttackState               = "silent",

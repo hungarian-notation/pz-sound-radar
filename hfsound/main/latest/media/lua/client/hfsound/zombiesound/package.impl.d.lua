@@ -4,6 +4,7 @@
 
 ---@class hfs.ZSKwargsBase
 ---@field radius number
+---@field category hfs.StateCategory
 ---@field volume? number
 ---@field duration? number
 ---@field style? hfs.Style

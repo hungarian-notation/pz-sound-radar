@@ -33,7 +33,6 @@ local ScopeRenderer = { Icons = Icons, Gradients = Gradients }; ScopeRenderer.__
 ---@class hfs.ScopeRenderer.Kwargs
 ---@field player? integer
 
-
 ---@param kw hfs.ScopeRenderer.Kwargs
 function ScopeRenderer.new(kw)
     ---@class (partial) hfs.ScopeRenderer
@@ -95,7 +94,7 @@ function ScopeRenderer:update()
 end
 
 function ScopeRenderer:update_quality()
-    self.m_quality_limit = floor(opt.options.quality:getValue())
+    self.m_quality_limit = floor(opt.options.quality.value)
     self.m_quality = 1 / rad(360 / self.m_quality_limit)
 end
 

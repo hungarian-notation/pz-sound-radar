@@ -1,7 +1,7 @@
 local module          = {}
 
 local taggers         = require('hfsound/worldsound/_impl/_taggers') 
-local styles          = require('hfsound/scope/style')
+local styles          = require('hfsound/scope/style/style')
 local color           = styles.colors.solid
 local hsx             = require('hfsound/colors')
 local scopeutil       = require('hfsound/scope/util')

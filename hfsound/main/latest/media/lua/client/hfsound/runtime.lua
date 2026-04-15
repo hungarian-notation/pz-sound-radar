@@ -6,10 +6,11 @@ require('hfsound/tuning')
 local worldsounds  = require('hfsound/worldsound/classifier')
 local zombiesounds = require('hfsound/zombiesound/simulator')
 local Scope        = require('hfsound/scope/scope')
-local options      = require('hfsound/options/options')
 
 ---@class (partial) _HFSOUND
 ---@field runtime   hfs.Runtime?
+---@field kill fun()
+---@field reset fun()
 HFSOUND            = HFSOUND or {}
 
 ---@class (exact) hfs.Runtime

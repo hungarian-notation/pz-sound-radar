@@ -55,7 +55,7 @@ end
 
 function ConfiguredColor:update()
     print("update ", self.style)
-    local color            = self.option:getValue()
+    local color            = self.option.color
     self.r, self.g, self.b = colors.desaturate(color.r, color.g, color.b, 1 - self.saturation)
     self.dirty             = false
 end
@@ -129,7 +129,7 @@ end
 ---@param kw hfs.RenderKwargs
 function ConfiguredColor:compute_flash(kw)
     if self.dirty then self:update() end
-    local factor = cosine(PI * kw.entry.m_age) * 0.5 + 0.5
+    local factor = cosine(4 * PI * kw.entry.m_age) * 0.5 + 0.5
     local r, g, b
     r = 1 - (1 - self.r) * factor
     g = 1 - (1 - self.g) * factor

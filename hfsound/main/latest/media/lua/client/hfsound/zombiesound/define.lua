@@ -22,7 +22,8 @@ function module.define_sound(kw)
         volume    = kw.volume or kw.radius,
         radius    = kw.radius,
         duration  = kw.duration or 1,
-        style     = kw.style or styles.DEFAULT_STYLE
+        style     = kw.style or styles.DEFAULT_STYLE,
+        category  = kw.category
     }
 
     assert(type(record.frequency) == "number", "logic error in define_sound")

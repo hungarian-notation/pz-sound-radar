@@ -7,12 +7,10 @@ local states = require('hfsound/zombiesound/states')
 
 ---@class hfs.ZombieSoundSimulator
 ---@field private m_scope hfs.Scope
----@field private m_xmin number
----@field private m_xmax number
----@field private m_ymin number
----@field private m_ymax number
 ---@field private m_delta number
 ---@field private m_rate number
+---@field private m_global_bounds [number,number,number,number]
+---@field private m_category_bounds { [hfs.StateCategory]: [number,number,number,number] }
 local ZombieSoundSimulator = {}; ZombieSoundSimulator.__index = ZombieSoundSimulator
 
 ---@class hfs.ZombieSoundSimulator.Kwargs
@@ -26,6 +24,10 @@ function ZombieSoundSimulator.new(kw)
     -- obj.m_events = {}
     obj.m_scope = kw.scope
 
+    obj.m_global_bounds = { 0, 0, 0, 0 }
+    obj.m_category_bounds = {}
+    for k in pairs(states.CATEGORIES) do obj.m_category_bounds[k] = { 0, 0, 0, 0 } end
+
     obj:update(0)
 
     return obj
@@ -37,11 +39,18 @@ function ZombieSoundSimulator:update(delta)
     self.m_rate = 1 / delta
 
     local player = getSpecificPlayer(self.m_scope.m_player_index)
+    self.m_global_bounds[1] = player:getX() - HFSOUND.tuning.simradius
+    self.m_global_bounds[2] = player:getY() - HFSOUND.tuning.simradius
+    self.m_global_bounds[3] = player:getX() + HFSOUND.tuning.simradius
+    self.m_global_bounds[4] = player:getY() + HFSOUND.tuning.simradius
 
-    self.m_xmin = player:getX() - HFSOUND.tuning.simradius
-    self.m_xmax = player:getX() + HFSOUND.tuning.simradius
-    self.m_ymin = player:getY() - HFSOUND.tuning.simradius
-    self.m_ymax = player:getY() + HFSOUND.tuning.simradius
+    for k in pairs(states.CATEGORIES) do
+        local category_bounds = self.m_category_bounds[k]
+        category_bounds[1] = player:getX() - HFSOUND.tuning.category_simradius[k]
+        category_bounds[2] = player:getY() - HFSOUND.tuning.category_simradius[k]
+        category_bounds[3] = player:getX() + HFSOUND.tuning.category_simradius[k]
+        category_bounds[4] = player:getY() + HFSOUND.tuning.category_simradius[k]
+    end
 end
 
 -- ---@param scope hfs.Scope
@@ -70,20 +79,20 @@ function ZombieSoundSimulator:simulate(zombie)
     local zombie_x = zombie:getX()
     local zombie_y = zombie:getY()
 
-    local x1, y1, x2, y2 = self.m_xmin, self.m_ymin, self.m_xmax, self.m_ymax
+    local state_category = states.getcategory(zombie)
+    local x1, y1, x2, y2 = unpack(self.m_category_bounds[state_category])
 
     -- ignore zombies outside of the AABB of our maximum hearing radius
     if zombie_x < x1 or zombie_x > x2 or zombie_y < y1 or zombie_y > y2 then
         return
     end
 
+    local state_sounds = HFSOUND.tuning.zombies[state_category]
+    local delta = self.m_delta
+
     if type(self.m_delta) ~= "number" then
         return -- first frame
     end
-
-    local state_category = states.getcategory(zombie)
-    local state_sounds = HFSOUND.tuning.zombies[state_category]
-    local delta = self.m_delta
 
     for _i, sound in ipairs(state_sounds) do
         -- FIXME: major optimization: precalculate `chance` for all sounds on
