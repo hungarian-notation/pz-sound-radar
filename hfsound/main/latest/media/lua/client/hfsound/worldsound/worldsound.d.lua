@@ -8,12 +8,17 @@
 ---@field volume int
 ---@field source T
 
+
 ---@class hfs.WSClassifier
----@field discriminator     hfs.WSTagger
----@field style             hfs.Style
----@field duration          number
----@field callback_test?    Scope.Entry.TestFunction
----@field callback_update?  Scope.Entry.UpdateFunction
+---
+---@field discriminator         hfs.WSTagger
+---@field style                 hfs.Style
+---@field duration              number
+---@field building_attenuated?  boolean #
+--- Whether the sound's effective radius is reduced if the player is hearing it 
+--- through a building's exterior walls.
+---@field callback_test?        Scope.Entry.TestFunction
+---@field callback_update?      Scope.Entry.UpdateFunction
 
 
 ---@alias hfs.WorldSoundClassifierFunction<T> fun(hfs.WorldSound & { player?: IsoPlayer }): hfs.WSClassifier

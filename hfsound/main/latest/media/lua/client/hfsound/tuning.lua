@@ -1,5 +1,6 @@
 local styles = require('hfsound/zombiesound/styles')
 local define = require('hfsound/zombiesound/define')
+local states = require("hfsound/zombiesound/states")
 local define_sound = define.define_sound
 
 ---@class (partial) _HFSOUND
@@ -15,99 +16,126 @@ HFSOUND.hearing = {
     THROUGH_EXTERIOR_WALL = 0.5,
 }
 
----@class (partial) hfs.globals.Tuning
-HFSOUND.tuning = {
+HFSOUND.tuning = (function()
+    ---@class (partial) hfs.globals.Tuning
+    local tbl = {
+        simradius = 0.0,
 
-    simradius = 0.0,
-    zombies = {
-        silent  = {},
+        ---@type { [hfs.StateCategory]: number }
+        category_simradius = {},
 
-        idle    = {
-            define_sound {
-                period = 2,
-                radius = 3,
-                duration = 4,
-                style = styles.BREATH_STYLE,
-            },
-            define_sound {
-                period = 20,
-                radius = 6,
-                duration = 4,
-                style = styles.BREATH_STYLE,
-            },
-            define_sound {
-                period = 200,
-                radius = 12,
-                duration = 4,
-                style = styles.BREATH_STYLE,
-            }
-        },
+        zombies = {
+            silent  = {},
 
-        stumble = {
-            define_sound {
-                frequency = 4,
-                radius = 6
+            idle    = {
+                define_sound {
+                    category = "idle",
+                    period = 2,
+                    radius = 3,
+                    duration = 4,
+                    style = styles.BREATH_STYLE,
+                },
+                define_sound {
+                    category = "idle",
+                    period = 200,
+                    radius = 8,
+                    duration = 4,
+                    style = styles.BREATH_STYLE,
+                },
             },
-            define_sound {
-                frequency = 1,
-                radius = 8
-            }
-        },
 
-        walk    = {
-            define_sound {
-                frequency = 2,
-                radius    = 4,
-                style     = styles.FOOTSTEP_STYLE
+            stumble = {
+                define_sound {
+                    category = "stumble",
+                    frequency = 4,
+                    radius = 6
+                },
+                define_sound {
+                    category = "stumble",
+                    frequency = 1,
+                    radius = 8
+                }
             },
-            define_sound {
-                period = 2,
-                radius = 8,
-                style  = styles.FOOTSTEP_STYLE
-            },
-            define_sound {
-                period = 8,
-                radius = 12,
-                style  = styles.FOOTSTEP_STYLE
-            }
-        },
 
-        clamber = {
-            define_sound {
-                frequency = 2,
-                radius = 6,
-                style = styles.CLAMBER_STYLE,
+            walk    = {
+                define_sound {
+                    category = "walk",
+                    period   = 2,
+                    radius   = 2,
+                    style    = styles.FOOTSTEP_STYLE
+                },
+                define_sound {
+                    category = "walk",
+                    period   = 8,
+                    radius   = 6,
+                    style    = styles.FOOTSTEP_STYLE
+                },
+                define_sound {
+                    category = "walk",
+                    period   = 30,
+                    radius   = 8,
+                    style    = styles.FOOTSTEP_STYLE
+                },
+                define_sound {
+                    category = "walk",
+                    period   = 200,
+                    radius   = 12,
+                    style    = styles.FOOTSTEP_STYLE
+                }
             },
-            define_sound {
-                period = 2,
-                radius = 12,
-                style = styles.CLAMBER_STYLE,
-            }
-        },
 
-        attack  = {
-            define_sound {
-                frequency = 20,
-                radius = 6,
-                style = styles.ATTACK_STYLE,
+            clamber = {
+                define_sound {
+                    category = "clamber",
+                    period = 7,
+                    radius = 8,
+                    style = styles.CLAMBER_STYLE,
+                },
+                define_sound {
+                    category = "clamber",
+                    period = 8,
+                    radius = 12,
+                    style = styles.CLAMBER_STYLE,
+                }
             },
-            define_sound {
-                frequency = 1,
-                radius = 12,
-                style = styles.ATTACK_STYLE,
-            }
-        },
-    } --[[@as { [hfs.StateCategory]: hfs.ZombieSound[] }]]
-}
 
+            attack  = {
+                define_sound {
+                    category = "attack",
+                    frequency = 1,
+                    radius = 12,
+                    style = styles.ATTACK_STYLE,
+                },
+                define_sound {
+                    category = "attack",
+                    period = 5,
+                    radius = 16,
+                    style = styles.ATTACK_STYLE,
+                }
+            },
+        } --[[@as { [hfs.StateCategory]: hfs.ZombieSound[] }]]
+    }
+
+    for k in pairs(states.CATEGORIES) do
+        tbl.category_simradius[k] = 0
+    end
+
+    return tbl
+end
+)()
 
 local tuning = HFSOUND.tuning
 
-for _, sounds in pairs(tuning.zombies) do
-    for _i, sound in ipairs(sounds) do
-        local max_radius = sound.radius * HFSOUND.hearing.KEEN_HEARING
-        if max_radius > tuning.simradius then
-            tuning.simradius = max_radius
+for category, sounds in pairs(tuning.zombies) do
+    for _, sound in ipairs(sounds) do
+        local sound_radius = sound.radius * HFSOUND.hearing.KEEN_HEARING
+
+        if sound_radius > tuning.simradius then
+            tuning.simradius = sound_radius
+        end
+
+        if sound_radius > tuning.category_simradius[category] then
+            tuning.category_simradius[category] = sound_radius
         end
     end
 end

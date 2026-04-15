@@ -21,3 +21,8 @@
 
 ---@class hfs.ColorPickerWithDefault : umbrella.ModOptions.ColorPicker
 ---@field defaultcolor umbrella.RGBA
+---@
+
+---@class hfs.MappedSlider : umbrella.ModOptions.Slider
+---@field mappedValue number
+---@field mapping fun(x:number):number

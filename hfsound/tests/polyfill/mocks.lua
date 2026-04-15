@@ -28,7 +28,7 @@ function MockIsoMovable.new(kw)
     obj.y = kw.y
     obj.z = kw.z
 
-    obj.classes = {}
+    obj.classes = { IsoObject = true }
 
     for _, c in ipairs(kw.classes) do
         obj.classes[c] = true

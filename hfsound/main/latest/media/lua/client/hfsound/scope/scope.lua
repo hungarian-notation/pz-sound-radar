@@ -48,7 +48,6 @@ end
 function Scope:create_context()
     local player = self:player()
     local building = player:getCurrentBuildingDef() --[[@as BuildingDef?]]
-
     local building_id = building and building:getID() or nil
 
     ---@type hfs.ScopeContext
@@ -57,11 +56,13 @@ function Scope:create_context()
         renderer        = self.renderer,
         player          = player,
         hearing         = 1.0,
-        x               = player:getX(),
-        y               = player:getY(),
-        z               = player:getZ(),
+        px              = player:getX(),
+        py              = player:getY(),
+        pz              = player:getZ(),
         player_building = building_id,
-        t               = os.time()
+        t               = os.time(),
+
+        
     }
 
     if player:hasTrait(CharacterTrait.DEAF) then
@@ -233,7 +234,7 @@ end
 
 function Scope:render()
     self.m_perf_perframe:enter()
-    local hearing_transbuilding = HFSOUND.hearing.THROUGH_EXTERIOR_WALL
+    local hearing_through_walls = HFSOUND.hearing.THROUGH_EXTERIOR_WALL
     local context = self:create_context()
     local hearing = context.hearing
 
@@ -241,9 +242,9 @@ function Scope:render()
         return -- why are you even running this mod if you're taking the deaf perk
     end
 
-    local px = context.x
-    local py = context.y
-    local pz = context.z
+    local px = context.px
+    local py = context.py
+    local pz = context.pz
     local player_building = context.player_building
     local kw = { context = context }
     local count = 0
@@ -251,28 +252,28 @@ function Scope:render()
     for _i, entry in ipairs(self.m_entries) do
         self.m_perf_perentry:enter()
         if not entry.m_extinct then
-            kw.zdiff              = entry.m_z - pz
+            local zdiff       = entry.m_z - pz
+            local distance_xy = IsoUtils.DistanceTo(px, py, entry.m_x, entry.m_y)
+            local distance_z  = math.abs(zdiff)
+            local distance    = distance_xy + distance_z * 2
+            local audibility  = hearing
+            local through_walls
 
-            local distance_xy     = IsoUtils.DistanceTo(px, py, entry.m_x, entry.m_y)
-            local distance_z      = math.abs(kw.zdiff)
-            local distance        = distance_xy + distance_z * 2
-            local effectiveRadius = entry.m_radius * hearing
+            if entry.m_building_attenuated then
+                local building = entry.m_building
+                if (building ~= player_building) then
+                    audibility = audibility * hearing_through_walls
+                    through_walls = true
+                else
+                    through_walls = false
+                end
+            else
+                through_walls = false
+            end
 
-
+            local effectiveRadius = entry.m_radius * audibility
             if distance < effectiveRadius then
                 self.m_perf_peractive:enter()
-
-                if entry.m_building_attenuated then
-                    local building = entry.m_building
-                    if (building ~= player_building) then
-                        effectiveRadius = effectiveRadius * hearing_transbuilding
-                        kw.transbuilding = true
-                    else
-                        kw.transbuilding = false
-                    end
-                else
-                    kw.transbuilding = false
-                end
 
                 -- TODO atan2 is expensive
 
@@ -284,6 +285,9 @@ function Scope:render()
                 kw.distance = distance
                 kw.radius = effectiveRadius
                 kw.theta = theta
+                kw.audibility = audibility
+                kw.through_walls = through_walls
+                kw.zdiff = zdiff
 
                 entry.m_style.render(entry.m_style, kw)
                 count = count + 1

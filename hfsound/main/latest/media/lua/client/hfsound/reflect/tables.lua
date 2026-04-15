@@ -1,30 +1,30 @@
 --[[
 
-    This source file is released under the MIT/Expat License. Only files 
+    This source file is released under the MIT/Expat License. Only files
     in which this header appears are covered by this license.
 
     Copyright © 2026 Christopher Bode
 
-    Permission is hereby granted, free of charge, to any person obtaining a 
-    copy of this software and associated documentation files (the “Software”), 
-    to deal in the Software without restriction, including without limitation 
-    the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-    and/or sell copies of the Software, and to permit persons to whom the 
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the “Software”),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
     Software is furnished to do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included 
+    The above copyright notice and this permission notice shall be included
     in all copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --]]
-    
+
 ---@alias xpairs.type "m" | "k"
 ---@alias xpairs.produces [ xpairs.type, string?, any ]
 
@@ -34,10 +34,12 @@ local VTI = {
     ["string"]   = -5,
     ["boolean"]  = -5,
     ["nil"]      = -4,
-    ["table"]    = -1,
+    ["table"]    = -2,
+    ["userdata"] = -1,
     ["function"] = 1
 }
 
+---@param t table | userdata
 local function xpairs(t)
     ---@type xpairs.produces[]
     local map = {}
@@ -47,8 +49,10 @@ local function xpairs(t)
         map[#map + 1] = { "m", nil, metatable }
     end
 
-    for k, v in pairs(t) do
-        map[#map + 1] = { "k", k, v }
+    if type(t) == "table" then
+        for k, v in pairs(t) do
+            map[#map + 1] = { "k", k, v }
+        end
     end
 
     local i = 1
@@ -63,7 +67,12 @@ local function xpairs(t)
             if ati ~= bti then
                 return ati < bti
             else
-                return a[2] < b[2]
+                local a2 = a[2]
+                local b2 = b[2]
+
+                if type(a2) ~= "string" then a2 = tostring(a2) end
+                if type(b2) ~= "string" then b2 = tostring(b2) end
+                return a2 < b2
             end
         end
     end)
@@ -80,6 +89,7 @@ local function xpairs(t)
 end
 
 local function stringify(somevalue, maxdepth)
+    
     local visited = {}
     local parts = {}
     local function printf(...)
@@ -106,7 +116,7 @@ local function stringify(somevalue, maxdepth)
             local keyident = keyname
 
             if keytype == "m" then
-                keyident = "(metatable)"
+                keyident = "@metatable"
             elseif type(keyname) == "string" then
                 keyident = keyname
             else
@@ -127,9 +137,9 @@ local function stringify(somevalue, maxdepth)
                         print(indent)
 
                         if i == tid then
-                            printf("%s = (%d) (self)\n", keyident, i)
+                            printf("%s = *%d (self)\n", keyident, i)
                         else
-                            printf("%s = (%d)\n", keyident, i)
+                            printf("%s = *%d\n", keyident, i)
                         end
 
                         skip = true
@@ -176,6 +186,8 @@ local function stringify(somevalue, maxdepth)
         printf("{\n")
         visit_table(1, somevalue, 1)
         printf("}\n")
+    elseif type(somevalue) == "userdata" then
+
     elseif type(somevalue) == "string" then
         printf("\"%s\"", type(somevalue), somevalue)
     else

@@ -6,7 +6,4 @@
 ---@field volume number
 ---@field duration number
 ---@field style hfs.Style
-
----@alias hfs.StateCategory  "silent"|"idle"|"stumble"|"walk"|"clamber"|"attack"
-
-
+---@field category hfs.StateCategory

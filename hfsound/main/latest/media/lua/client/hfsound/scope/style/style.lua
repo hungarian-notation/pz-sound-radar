@@ -5,8 +5,8 @@ local simple_color = require('hfsound/scope/_color/simple')
 local cyclic_color = require('hfsound/scope/_color/cyclic')
 local colorutil = require('hfsound/colors')
 local Icons = require('hfsound/icons')
+local render = require('hfsound/scope/style/style_render')
 
-local impl = require('hfsound/scope/_style/_render')
 
 ---@generic T
 ---@param v T
@@ -26,7 +26,7 @@ local function constant(v) return function(...) return v end end
 ---@field m_iconcolor    hfs.Color
 ---@field m_arclen       hfs.StyleClosure<number>
 ---@field m_color        hfs.Color
-local Basic = { render = impl.renderstyle }; Basic.__index = Basic
+local Basic = { render = render.render }; Basic.__index = Basic
 
 ---@class hfs.BasicStyle.Kwargs.Icon
 ---@field which          Texture | hfs.Icon
@@ -49,7 +49,7 @@ function Basic.new(kw)
         obj.m_color = simple_color.new(1.0, 0.75, 0.0, 1.0)
     end
 
-    obj.m_color_desaturated = obj.m_color:desaturate(0.5)
+    obj.m_color_desaturated = obj.m_color:desaturate(0.75)
 
     if (type(kw.arc) == "nil") or (type(kw.arc) == "boolean" and kw.arc == true) then
         obj.m_arc = true
@@ -105,6 +105,7 @@ function Basic.new(kw)
     return obj
 end
 
+
 function Basic:init(renderer)
     if self.m_iconload then
         self.m_icontexture = renderer.icons[self.m_iconload]
@@ -124,6 +125,8 @@ function Basic:init(renderer)
         renderer.icons[Icons.ARROW_DOWN_2],
         renderer.icons[Icons.ARROW_DOWN_3]
     }
+
+    self.m_question_icon = renderer.icons[Icons.SYMBOL_QUESTION]
 
     if self.m_icon then
         assert(self.m_icontexture ~= nil, "missing texture for icon")
