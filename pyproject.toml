@@ -1,29 +1,31 @@
 [project]
-name = "zombuild_hfsound"
-version = "0.1.0"
+name = "hfsound_plugin"
+version = "0.1.2a0"
 description = "sound visualization mod for project zomboid"
 authors = [{ name = "Chris Bode" }]
 requires-python = ">=3.14"
 dependencies = [
     "pillow (>=12.2.0,<13.0.0)",
     "numpy (>=2.4.4,<3.0.0)",
-    "zombuild @ git+https://github.com/hungarian-notation/zombuild@v0.1.2",
+    "zombuild @ file:///C:/Users/chris/Zomboid/Projects/zombuild",
 ]
+
+[project.entry-points.zombuild_plugins]
+hfsound="hfsound_plugin:CustomPlugin"
+
+[dependency-groups]
+dev = ["ruff (>=0.15.10,<0.16.0)"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-packages = [{ include = "zombuild_hfsound" }]
+packages = [{ from="src", include = "hfsound_plugin" }]
 
+[tool.poetry.dependencies]
+zombuild = {develop = true}
 
 [tool.ruff.lint]
 select = ["F", "W", "I"] 
 ignore = []
-
-
-[tool.poetry.dependencies]
-
-[dependency-groups]
-dev = ["ruff (>=0.15.10,<0.16.0)"]

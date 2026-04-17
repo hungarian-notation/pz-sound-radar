@@ -5,7 +5,7 @@ from zombuild.fs import expand
 from zombuild.tasks import ActionableTask
 from zombuild_core import CorePlugin
 
-from zombuild_hfsound.gradients.gradients import (
+from hfsound_plugin.gradients.gradients import (
     Gradient,
     gradient_default,
     gradient_electronic,
@@ -69,5 +69,5 @@ class GradientsTask(ActionableTask):
             calctime += s2 - s1
             iotime += s3 - s2
 
-        print(f"cpu  = {calctime/(10**9):.8f}")
-        print(f"disk = {iotime/(10**9):.8f}")
+        print(f"cpu  = {calctime / (10**9):.8f}")
+        print(f"disk = {iotime / (10**9):.8f}")

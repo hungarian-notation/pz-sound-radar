@@ -4,4 +4,4 @@ to function should contain a header licensing them under the MIT/Expat
 license.
 
 If you believe a file is missing a license header in error, please
-open a pull request.
+open an issue.

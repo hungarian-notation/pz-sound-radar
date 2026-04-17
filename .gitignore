@@ -1,8 +1,10 @@
-.junk
-.scratch
-.old
-.lua
-.vscode
+.dist/**/*
+.generated/
+.junk/
+.scratch/
+.old/
+.lua/
+.vscode/
 .emmyrc.json
 todo.md
 

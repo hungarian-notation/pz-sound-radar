@@ -4,10 +4,10 @@
     "id": "hfsound",
     "name": "Sound Radar",
     "version": "0.0.1",
-    "description": { "ref": "mod-description.txt" },
+    "description": { "ref": "src/hfsound/mod-description.txt" },
     "url": "https://example.com",
 
-    "preview": "assets/preview.png",
+    "preview": "src/hfsound/assets/preview.png",
 
     "authors": [ "hafnium" ],
     "category": "features",
@@ -21,13 +21,13 @@
         "hfsound": {
 
             "name": "Sound Radar",
-            "poster": "assets/poster.png",
-            "icon": "assets/icon.png",
+            "poster": "src/hfsound/assets/poster.png",
+            "icon": "src/hfsound/assets/icon.png",
             "versionMin": "42.15",
             "versions": {
                 "common": [
                     {
-                        "source": "assets/textures",
+                        "source": "src/hfsound/assets/textures",
                         "prefix": "media/textures/hfsound"
                     },
                     {
@@ -38,7 +38,7 @@
 
                 "42.16": [
                     {
-                        "source": "main/latest/media/lua",
+                        "source": "src/hfsound/main/media/lua",
                         "prefix": "media/lua",
                         "ignore": "*.d.lua"
                     },
@@ -51,7 +51,7 @@
                         "action": "translations",
                         "target": [
                             {
-                                "source": "main/latest/translations",
+                                "source": "src/hfsound/main/translations",
                                 "prefix": "media/lua/shared/Translate",
                                 "glob": "*.json"
                             }
@@ -62,7 +62,7 @@
         }
     },
 
-    "plugins": [ "core", "codegen", "zombuild_hfsound" ],
+    "plugins": [ "core", "codegen", "hfsound" ],
 
     "tasks": {
         "gradients": {
@@ -80,7 +80,7 @@
                 },
                 {
                     "type": "hfs.Icon",
-                    "glob": "assets/textures/icon/*.png",
+                    "glob": "src/hfsound/assets/textures/icon/*.png",
                     "output": ".generated/lua/hfsound/icons.lua"
                 }
             ]

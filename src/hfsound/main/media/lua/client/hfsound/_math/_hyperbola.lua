@@ -1,3 +1,5 @@
+
+
 --[[
     This function creates a closure which evaluates an axis-aligned
     rectangular hyperbola with a horizontal asymptote at y=`asymptote` which
@@ -5,8 +7,6 @@
 
     https://www.geogebra.org/calculator/t5bw3rxh
 --]]
-
-
 local function TwoPointHorizon(ax, ay, bx, by, asymptote)
     local common_factor = (-ay + by) / (asymptote - by)
     local numer_factor = asymptote - ay
@@ -24,6 +24,11 @@ local function twopointhrz(ax, ay, bx, by, asymptote, x)
     return ay + (common_term * (asymptote - ay)) / (common_term + bx - ax)
 end
 
+
+--[[
+    In this version, you specify the intersection between the asymptotes, as 
+    well as one point on the hyperbola.
+--]]
 local function HyperbolaCenterPoint(c, d, a, b)
     return function(x)
         return b + (b * x - b * a - d * x + d * a) / (c - x)

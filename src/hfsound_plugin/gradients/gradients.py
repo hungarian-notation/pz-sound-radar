@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from PIL import Image
 
-from zombuild_hfsound.gradients.easing import smoothstep
+from hfsound_plugin.gradients.easing import smoothstep
 
 if TYPE_CHECKING:
     from typing import Any, Callable
