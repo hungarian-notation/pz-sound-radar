@@ -55,7 +55,7 @@ function module.render(style, kw)
     if distance < DISTANCE_0 then
         r1 = minimum_radius
     else
-        r1 = smootherstep(DISTANCE_0, DISTANCE_3, distance) * radius_range + minimum_radius -- FIXME: inline
+        r1 = smootherstep(DISTANCE_0, DISTANCE_3, distance) * (radius_range + minimum_radius) -- FIXME: inline
     end
 
     r2 = r1 - 0.3
