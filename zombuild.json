@@ -3,7 +3,7 @@
 
     "id": "hfsound",
     "name": "Sound Radar",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": { "ref": "src/hfsound/mod-description.txt" },
     "url": "https://example.com",
 
@@ -11,7 +11,7 @@
 
     "authors": [ "hafnium" ],
     "category": "features",
-    "versionMin": "42.0",
+    "versionMin": "42.17",
     "require": [ ],
     "incompatible": [ ],
 
@@ -23,7 +23,7 @@
             "name": "Sound Radar",
             "poster": "src/hfsound/assets/poster.png",
             "icon": "src/hfsound/assets/icon.png",
-            "versionMin": "42.15",
+            "versionMin": "42.17",
             "versions": {
                 "common": [
                     {
@@ -36,7 +36,7 @@
                     }
                 ],
 
-                "42.16": [
+                "42.17": [
                     {
                         "source": "src/hfsound/main/media/lua",
                         "prefix": "media/lua",

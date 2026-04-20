@@ -1,3 +1,4 @@
+---@diagnostic disable: preferred-local-alias
 if not getDebug() then return end
 
 hftable = require('hfsound/reflect/tables')
@@ -7,18 +8,20 @@ if dump == nil or dump == hfdump then
 end
 
 
-hfdump = hftable.dump
-
+hfdump           = hftable.dump
 
 ---@class (partial) _HFSOUND
 ---@field debug _HFSOUND_DEBUG
 ---@field reload fun()
+---@field render fun()
+---@field perf { [string]: hfs.PerformanceTimer }
 HFSOUND          = HFSOUND or {}
 
 ---x, y, z, radius
 ---@alias CircleRequest [number, number, number, number, number, number, number, number, number]
 
 ---@class _HFSOUND_DEBUG
+---@field m_zsinst? hfs.Instrumentation
 HFSOUND.debug    = HFSOUND.debug or {
     ---@type {
     ---arr?:     CircleRequest[],
@@ -28,7 +31,7 @@ HFSOUND.debug    = HFSOUND.debug or {
 
     ---@type number?
     radius = nil,
-    ---@type string|boolean
+    ---@type {[string]: boolean}|boolean
     reporting = false,
 
     ---@type hfs.Instrumentation[]
@@ -188,7 +191,6 @@ end
 ]]
 
 local zscolor_dispatch = {
-
     silent  = { 0.0, 1.0, 1.0, 0.125 },
     idle    = { 0.5, 1.0, 0.0, 0.125 },
     stumble = { 1.0, 0.5, 0.0, 0.125 },
@@ -200,37 +202,39 @@ local zscolor_dispatch = {
 function debug.instrument_zombiesounds()
     if HFSOUND.runtime == nil then return nil end
 
-    if HFSOUND.debug._izs ~= nil then
-        HFSOUND.debug._izs:clear()
-    end
+    local existing = HFSOUND.debug.m_zsinst
+    if existing ~= nil then
+        existing:clear()
+        HFSOUND.debug.m_zsinst = nil
+    else
+        HFSOUND.debug.m_zsinst = debug.instrument {
+            owner = HFSOUND.runtime.scope,
+            name = "offerzombiesound",
+            ---@param uid? string
+            ---@param classifier hfs.ZombieSound
+            ---@param zombie IsoZombie
+            pre = function(self, scope, uid, classifier, zombie)
+                local x = zombie:getX()
+                local y = zombie:getY()
+                local z = zombie:getZ()
+                local radius = classifier.radius
 
-    HFSOUND.debug._izs = debug.instrument {
-        owner = HFSOUND.runtime.scope,
-        name = "offerzombiesound",
-        ---@param uid? string
-        ---@param classifier hfs.ZombieSound
-        ---@param zombie IsoZombie
-        pre = function(self, scope, uid, classifier, zombie)
-            local x = zombie:getX()
-            local y = zombie:getY()
-            local z = zombie:getZ()
-            local radius = classifier.radius
+                if type(x) ~= "number" then
+                    print(x, " ", type(x))
+                    print(y, " ", type(y))
+                    print(z, " ", type(z))
+                    print(radius, " ", type(radius))
+                    return true
+                end
 
-            if type(x) ~= "number" then
-                print(x, " ", type(x))
-                print(y, " ", type(y))
-                print(z, " ", type(z))
-                print(radius, " ", type(radius))
+                HFSOUND.debug.requestCircle(x, y, z, radius, unpack(zscolor_dispatch[classifier.category]))
+
                 return true
             end
+        }
+    end
 
-            HFSOUND.debug.requestCircle(x, y, z, radius, unpack(zscolor_dispatch[classifier.category]))
-
-            return true
-        end
-    }
-
-    return HFSOUND.debug._izs
+    return HFSOUND.debug.m_zsinst
 end
 
 function debug.instrument_sounds()
@@ -241,8 +245,6 @@ end
 debug.iws = debug.instrument_worldsounds
 debug.izs = debug.instrument_zombiesounds
 debug.ias = debug.instrument_sounds
-
-local added = false
 
 ---@param x number
 ---@param y number
@@ -259,12 +261,6 @@ function debug.requestCircle(x, y, z, radius, r, g, b, a)
     circles.arr = circles.arr or {}
 
     if circles.next > 32 then circles.next = 1 end
-
-    if not added then
-        print("ADDED EVENT HOOK")
-        Events.OnPreUIDraw.Add(HFSOUND.debug.render)
-        added = true
-    end
 
     assert(type(x) == "number")
     assert(type(y) == "number")
@@ -338,7 +334,7 @@ function debug.renderIsoCircle(x, y, z, radius, r, g, b, a, thickness, player)
     end
 end
 
-if HFSOUND.debug.render ~= nil then
+if debug.render ~= nil then
     Events.OnPostUIDraw.Remove(HFSOUND.debug.render)
     Events.OnPreUIDraw.Remove(HFSOUND.debug.render)
 end
@@ -356,10 +352,10 @@ function debug.render()
 
     for i = 1, 256 do
         local circle = arr[i]
-        if circle ~= nil and circle[5] < 512 then
+        if circle ~= nil and circle[5] < 30 then
             local x, y, z, radius, age, r, g, b, a = unpack(circle)
             age = age or 0
-            a = a - age * 0.002
+            a = a - age / 30
             if a > 0 then
                 circle[5] = age + 1
                 assert(type(x) == "number")
@@ -374,6 +370,8 @@ function debug.render()
         end
     end
 end
+
+Events.OnPreUIDraw.Add(HFSOUND.debug.render)
 
 ---@param mod "hfsound" | string
 ---@param path string

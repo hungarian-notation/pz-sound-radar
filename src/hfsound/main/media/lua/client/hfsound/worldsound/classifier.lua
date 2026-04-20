@@ -13,19 +13,16 @@ local WorldSoundClassifier   = {}; WorldSoundClassifier.__index = WorldSoundClas
 ---@return hfs.WorldSoundClassifier
 function WorldSoundClassifier.new(kw)
     local obj = setmetatable({}, WorldSoundClassifier)
-
     --- the arguments table passed to this instance's constructor
     obj.m_kwargs = kw
     obj.m_scope = kw.scope
     obj.m_player_index = obj.m_scope.m_player_index
-
     ---@type IsoPlayer?
     obj.m_player = nil
-
     return obj
 end
 
-function WorldSoundClassifier:update(_dt)
+function WorldSoundClassifier:update()
     self.m_player = getSpecificPlayer(self.m_player_index)
 end
 

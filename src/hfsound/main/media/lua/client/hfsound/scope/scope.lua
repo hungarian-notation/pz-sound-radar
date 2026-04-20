@@ -2,7 +2,7 @@ local Entry         = require('hfsound/scope/entry')
 local ScopeRenderer = require('hfsound/scope/renderer')
 
 local xmath         = require('hfsound/math')
-local dev           = require("hfsound/dev")
+local dev           = require('hfsound/debug_timer')
 local ilerp         = xmath.ilerp
 local lerp_clamped  = xmath.lerp_clamped
 
@@ -10,6 +10,14 @@ local lerp_clamped  = xmath.lerp_clamped
 ---@field overwhelm number
 ---@field overwhelm_clamped number
 local Scope         = {}; Scope.__index = Scope
+
+local dbg_render, dbg_rendereach, dbg_renderactive
+
+if getDebug() then
+    dbg_render = dev.PerformanceTimer.new("scope_render")
+    -- dbg_rendereach = dev.PerformanceTimer.new("scope_render_each")
+    -- dbg_renderactive = dev.PerformanceTimer.new("scope_render_active")
+end
 
 ---@param player integer
 function Scope.new(player)
@@ -32,11 +40,6 @@ function Scope.new(player)
     obj.m_drawn_entries = 0
     obj.overwhelm = 0.0 --[[@as number]]
     obj.overwhelm_clamped = 0.0
-
-    obj.m_perf_perframe = dev.PerfTimer.new("Scope:Render")
-    obj.m_perf_perentry = dev.PerfTimer.new("Scope:Render:Each")
-    obj.m_perf_peractive = dev.PerfTimer.new("Scope:Render:Each(Active)")
-
     return obj
 end
 
@@ -62,7 +65,7 @@ function Scope:create_context()
         player_building = building_id,
         t               = os.time(),
 
-        
+
     }
 
     if player:hasTrait(CharacterTrait.DEAF) then
@@ -123,7 +126,7 @@ end
 
 ---@param dt number
 function Scope:update_overwhelm(dt)
-    self.overwhelm_goal = math.max(0, ilerp(10, 40, self.m_drawn_entries)) -- only clamped > 0
+    self.overwhelm_goal = math.max(0, ilerp(10, 20, self.m_drawn_entries)) -- only clamped > 0
     local overwhelm     = lerp_clamped(self.overwhelm, self.overwhelm_goal, dt * 2)
 
     if math.abs(self.overwhelm_goal - self.overwhelm) > 0.01 then
@@ -224,16 +227,10 @@ function Scope:free_entry()
     return i, entry
 end
 
-function Scope:everyoneminute()
-    if getDebug() then
-        self.m_perf_perframe:report(true)
-        self.m_perf_perentry:report(true)
-        self.m_perf_peractive:report(true)
-    end
-end
 
 function Scope:render()
-    self.m_perf_perframe:enter()
+    if dbg_render then dbg_render:enter() end
+
     local hearing_through_walls = HFSOUND.hearing.THROUGH_EXTERIOR_WALL
     local context = self:create_context()
     local hearing = context.hearing
@@ -250,7 +247,7 @@ function Scope:render()
     local count = 0
 
     for _i, entry in ipairs(self.m_entries) do
-        self.m_perf_perentry:enter()
+        if dbg_rendereach then dbg_rendereach:enter() end
         if not entry.m_extinct then
             local zdiff       = entry.m_z - pz
             local distance_xy = IsoUtils.DistanceTo(px, py, entry.m_x, entry.m_y)
@@ -273,7 +270,7 @@ function Scope:render()
 
             local effectiveRadius = entry.m_radius * audibility
             if distance < effectiveRadius then
-                self.m_perf_peractive:enter()
+                if dbg_renderactive then dbg_renderactive:enter() end
 
                 -- TODO atan2 is expensive
 
@@ -292,7 +289,7 @@ function Scope:render()
                 entry.m_style.render(entry.m_style, kw)
                 count = count + 1
 
-                self.m_perf_peractive:exit()
+                if dbg_renderactive then dbg_renderactive:exit() end
             end
         end
 
@@ -301,11 +298,11 @@ function Scope:render()
             If the player goes into louisville and then leaves, the scope will
             forever be looping over a tail end of tons of deactivated entries.
         --]]
-        self.m_perf_perentry:exit()
+        if dbg_rendereach then dbg_rendereach:exit() end
     end
 
     self.m_drawn_entries = count
-    self.m_perf_perframe:exit()
+        if dbg_render then dbg_render:exit() end
 end
 
 return Scope

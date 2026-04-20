@@ -245,7 +245,7 @@ end
 function love.update(dt)
     if LAST_MINUTE < (now() - 5) then
         LAST_MINUTE = now()
-        SCOPE:everyoneminute()
+        -- SCOPE:everyoneminute()
     end
 
     keepalive("love.update", { trace = "enter", heartbeat = true })

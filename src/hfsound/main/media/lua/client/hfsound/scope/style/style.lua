@@ -39,8 +39,13 @@ local Basic = { render = render.render }; Basic.__index = Basic
 ---@field gradient?      hfs.Gradient,
 ---@field icon?          hfs.Icon | hfs.BasicStyle.Kwargs.Icon
 
+HFSOUND_BASICSTYLE_COUNT = HFSOUND_BASICSTYLE_COUNT or 0
+
 ---@param kw hfs.BasicStyle.Kwargs
 function Basic.new(kw)
+    HFSOUND_BASICSTYLE_COUNT = HFSOUND_BASICSTYLE_COUNT + 1
+    print("instantiating BasicStyle #" .. tostring(HFSOUND_BASICSTYLE_COUNT))
+
     local obj = setmetatable({}, Basic)
 
     if kw.color then

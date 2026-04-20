@@ -7,6 +7,7 @@ local lerp_clamped    = hfmath.lerp_clamped
 local smootherstep    = hfmath.smootherstep
 local math_min        = math.min
 local math_log        = math.log
+local PI              = math.pi 
 local TAU             = math.pi * 2
 
 local opt_radius_min  = options.options.radius_min
@@ -19,6 +20,8 @@ local DISTANCE_0      = 1.5
 local DISTANCE_1      = 5
 local DISTANCE_2      = 8
 local DISTANCE_3      = 12
+
+local DISTANCE_FAR    = 24
 
 -- #endregion defines
 
@@ -37,6 +40,8 @@ end
 ---@param kw hfs.RenderKwargs
 function module.render(style, kw)
     local ctx              = kw.context
+    local renderer         = ctx.renderer
+    local radius_limit     = renderer.m_radiuslimit
     local distance         = kw.distance
     local theta            = kw.theta
     local through_walls    = kw.through_walls
@@ -55,8 +60,10 @@ function module.render(style, kw)
     if distance < DISTANCE_0 then
         r1 = minimum_radius
     else
-        r1 = smootherstep(DISTANCE_0, DISTANCE_3, distance) * (radius_range + minimum_radius) -- FIXME: inline
+        r1 = smootherstep(DISTANCE_0, DISTANCE_FAR, distance) * radius_range + minimum_radius -- FIXME: inline
     end
+
+    r1 = math.min(radius_limit, r1)
 
     r2 = r1 - 0.3
 
@@ -64,8 +71,8 @@ function module.render(style, kw)
         local arclen = style.m_arclen(kw)
 
         if distance <= DISTANCE_1 then
-            local ratio = smootherstep(DISTANCE_1, 0, distance)        -- FIXME: inline
-            arclen = lerp_clamped(arclen, TAU * minimum_radius, ratio) -- FIXME: inline
+            local ratio = smootherstep(DISTANCE_1, 0, distance)       -- FIXME: inline
+            arclen = lerp_clamped(arclen, PI * minimum_radius, ratio) -- FIXME: inline
         end
 
         local r, g, b, a
@@ -76,7 +83,7 @@ function module.render(style, kw)
             r, g, b, a = style.m_color:compute(kw)
         end
 
-        ctx.renderer:renderArc(style.m_gradient, r1, r2, theta, arclen, r, g, b, a * alpha_multiplier)
+        renderer:renderArc(style.m_gradient, r1, r2, theta, arclen, r, g, b, a * alpha_multiplier)
     end
 
     local icon = style.m_icon
@@ -115,7 +122,7 @@ function module.render(style, kw)
         local r, g, b, a = iconcolor:compute(kw)
         local ricon      = 0.5 * (r1 + r2)
 
-        ctx.renderer:renderSprite(
+        renderer:renderSprite(
             ricon, theta,
             r, g, b, a * alpha_multiplier,
             icontexture, 0, style.m_iconscale(kw)

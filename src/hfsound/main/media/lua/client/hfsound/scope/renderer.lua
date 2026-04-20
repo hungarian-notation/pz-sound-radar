@@ -59,6 +59,7 @@ function ScopeRenderer.new(kw)
     ---@type IsoPlayer
     obj.m_player = nil
     obj.m_zoom = 1.0
+    obj.m_radiuslimit = 8.0
     obj.m_player_screen_x = 0.0
     obj.m_player_screen_y = 0.0
     obj.m_t = os.time()
@@ -82,9 +83,8 @@ function ScopeRenderer:update()
 
     self.m_zoom = getCore():getZoom(playerIndex)
     self.m_invzoom = 1 / self.m_zoom
-
+    self.m_radiuslimit = 8 * self.m_zoom
     self.m_indicator_height_zoomed = self.m_indicator_height * self.m_invzoom
-
     self.m_player = p
     self.m_player_screen_x = isoToScreenX(0, p:getX(), p:getY(), p:getZ())
     self.m_player_screen_y = isoToScreenY(0, p:getX(), p:getY(), p:getZ())

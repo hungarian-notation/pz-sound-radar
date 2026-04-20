@@ -30,15 +30,15 @@ HFSOUND.tuning = (function()
             idle    = {
                 define_sound {
                     category = "idle",
-                    period = 2,
+                    period = 1,
                     radius = 3,
                     duration = 4,
                     style = styles.BREATH_STYLE,
                 },
                 define_sound {
                     category = "idle",
-                    period = 200,
-                    radius = 8,
+                    period = 10,
+                    radius = 6,
                     duration = 4,
                     style = styles.BREATH_STYLE,
                 },
@@ -60,26 +60,14 @@ HFSOUND.tuning = (function()
             walk    = {
                 define_sound {
                     category = "walk",
-                    period   = 2,
-                    radius   = 2,
+                    period   = 0.5,
+                    radius   = 3,
                     style    = styles.FOOTSTEP_STYLE
                 },
                 define_sound {
                     category = "walk",
-                    period   = 8,
-                    radius   = 6,
-                    style    = styles.FOOTSTEP_STYLE
-                },
-                define_sound {
-                    category = "walk",
-                    period   = 30,
+                    period   = 4,
                     radius   = 8,
-                    style    = styles.FOOTSTEP_STYLE
-                },
-                define_sound {
-                    category = "walk",
-                    period   = 200,
-                    radius   = 12,
                     style    = styles.FOOTSTEP_STYLE
                 }
             },
