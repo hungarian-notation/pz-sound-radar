@@ -59,6 +59,9 @@ function ScopeRenderer.new(kw)
     ---@type IsoPlayer
     obj.m_player = nil
     obj.m_zoom = 1.0
+    obj.m_invzoom = 1.0
+
+    ---Zoom aware upper bound on indicator radius to keep things on the player's screen.
     obj.m_radiuslimit = 8.0
     obj.m_player_screen_x = 0.0
     obj.m_player_screen_y = 0.0
@@ -73,6 +76,7 @@ function ScopeRenderer.new(kw)
 
     obj.m_player_index = kw.player or 0
     obj.m_indicator_height = 0.5
+    obj.m_indicator_height_zoomed = obj.m_indicator_height * obj.m_invzoom
 
     return obj
 end
@@ -107,6 +111,10 @@ function ScopeRenderer:calculate_steps(radius, length)
     local steps    = min(self.m_quality_limit, max(1, ceil(rawsteps)))
     return steps
 end
+
+local SpriteRendererInstance = getRenderer()
+local SpriteRenderer_renderPoly = SpriteRendererInstance.renderPoly
+---@cast SpriteRenderer_renderPoly hfs.Function_RenderPolyQuadUV
 
 ---@param gradient hfs.Gradient | Texture
 ---@param r1 number
@@ -151,18 +159,19 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
     local delta            = sweep / steps
     local vary_alpha       = inner_angle < TAU
 
-
     -- the texture's `u` coordinates
     local tex_u_1 = 0.5
     local tex_u_2 = 0.5
 
-    local renderer = getRenderer()
-    local renderPoly = renderer.renderPoly
-    ---@cast renderPoly hfs.Function_RenderPolyQuadUV
-
     local theta_2 = from
     local sin_theta_2 = sin(from)
     local cos_theta_2 = cos(from)
+
+    -- XXX
+    -- This still leaves a bit of performance on the floor. We should
+    -- split this into one loop that creates steps+1 pairs of vertices,
+    -- and then a second loop over pairs of those vertices to draw the
+    -- quads. It would more be readable and actually do less math.
 
     for i = 0, steps - 1 do
         local theta_1 = theta_2 -- or from + i * delta
@@ -202,6 +211,13 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
         -- local cos_theta_1 = cos(theta_1)
         -- cos_theta_2 = cos(theta_2)
 
+        -- XXX Potential Optimization
+        -- project_isooff does the same and has the same signature as 
+        -- IsoUtils.XToScreen and IsoUtils.YToScreen, but at the same time
+        -- with a multi-return. It may be worth investigating to see if
+        -- calling across the Lua/Java boundary with the arguments list
+        -- twice is still faster than doing the math ourselves.
+
         local x1, y1 = project_isooff(
             inner_radius * cos_theta_1, inner_radius * sin_theta_1,
             height,
@@ -233,8 +249,9 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
         -- sprite quads, but the renderer only interpolates the uv coordinates
         -- of the rendered triangles in affine space. There may be a way to
         -- mitigate this by manipulating the transformation matrix.
+
         if i % 2 == 0 then
-            renderPoly(renderer, gradient_texture,
+            SpriteRenderer_renderPoly(SpriteRendererInstance, gradient_texture,
                 x2, y2,
                 x3, y3,
                 x4, y4,
@@ -246,7 +263,7 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
                 tex_u_1, 1
             )
         else
-            renderPoly(renderer, gradient_texture,
+            SpriteRenderer_renderPoly(SpriteRendererInstance, gradient_texture,
                 x1, y1,
                 x2, y2,
                 x3, y3,
@@ -263,6 +280,8 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
     return steps
 end
 
+---Draws a sprite relative to the player at a position given by the polar 
+---coordinates `theta` and `radius` 
 ---@param radius number
 ---@param theta number radians (in isometric coordinate system)
 ---@param r number red
@@ -275,11 +294,9 @@ end
 function ScopeRenderer:renderSprite(radius, theta, r, g, b, a, texture, spriteTheta, scale)
     local playerX = self.m_player_screen_x
     local playerY = self.m_player_screen_y
-    local zoom = self.m_zoom
-
-    local rx, ry = rotate_vector(theta, radius / zoom, 0)
-    local cx, cy = project_iso(rx, ry, self.m_indicator_height / zoom, 0)
-
+    local invzoom = self.m_invzoom
+    local rx, ry = rotate_vector(theta, radius * invzoom, 0)
+    local cx, cy = project_iso(rx, ry, self.m_indicator_height_zoomed, 0)
     drawTexture(texture, scale, cx + playerX, cy + playerY, spriteTheta + math.pi, r, g, b, a)
 end
 

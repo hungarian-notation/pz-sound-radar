@@ -1,5 +1,21 @@
-local xgeom = require('hfsound/geom')
+--[[
 
+    Extends SpriteRenderer with the ability to render sprites
+    with specific affine transfomations.
+
+    drawTexture(...) renders sprites centered at a given point on the 
+    screen with a certain rotation.
+
+    drawTextureIsometric(...) renders renders sprites projected into 
+    isometric space.
+
+    I am still using drawTexture for icons, but drawTextureIsomorphic
+    is currently disused, as rendering the curved arcs from a linear 
+    gradient texture is no longer a simple affine transformation.
+
+--]]
+
+local xgeom = require('hfsound/geom')
 local rotate_rectangle = xgeom.rotate_rectangle
 local project_isometric = xgeom.project_iso
 

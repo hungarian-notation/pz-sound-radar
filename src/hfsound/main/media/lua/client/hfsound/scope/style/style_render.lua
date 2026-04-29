@@ -7,7 +7,7 @@ local lerp_clamped    = hfmath.lerp_clamped
 local smootherstep    = hfmath.smootherstep
 local math_min        = math.min
 local math_log        = math.log
-local PI              = math.pi 
+local PI              = math.pi
 local TAU             = math.pi * 2
 
 local opt_radius_min  = options.options.radius_min
@@ -20,7 +20,6 @@ local DISTANCE_0      = 1.5
 local DISTANCE_1      = 5
 local DISTANCE_2      = 8
 local DISTANCE_3      = 12
-
 local DISTANCE_FAR    = 24
 
 -- #endregion defines
@@ -63,12 +62,14 @@ function module.render(style, kw)
         r1 = smootherstep(DISTANCE_0, DISTANCE_FAR, distance) * radius_range + minimum_radius -- FIXME: inline
     end
 
-    r1 = math.min(radius_limit, r1)
+    r1 = math_min(radius_limit, r1)
 
     r2 = r1 - 0.3
 
-    if style.m_arc then
-        local arclen = style.m_arclen(kw)
+    local style_arc = style.m_arc
+
+    if style_arc then
+        local arclen = style.m_arclen
 
         if distance <= DISTANCE_1 then
             local ratio = smootherstep(DISTANCE_1, 0, distance)       -- FIXME: inline
@@ -83,25 +84,28 @@ function module.render(style, kw)
             r, g, b, a = style.m_color:compute(kw)
         end
 
-        renderer:renderArc(style.m_gradient, r1, r2, theta, arclen, r, g, b, a * alpha_multiplier)
+        renderer:renderArc(style_arc, r1, r2, theta, arclen, r, g, b, a * alpha_multiplier)
     end
 
-    local icon = style.m_icon
-    local icontexture = style.m_icontexture
+    local style_icon = style.m_icon
     local zdiff = kw.zdiff
+
+    ---@type Texture?
+    local icontexture 
+    
+    if not not style_icon then 
+        ---@cast style_icon Texture
+        icontexture = style_icon
+    end 
 
     if distance < DISTANCE_2 and not through_walls then
         if zdiff > 0.5 then
-            icon = true
-
             if zdiff > 1.5 then
                 icontexture = style.m_uicon[3]
             else
                 icontexture = style.m_uicon[2]
             end
         elseif zdiff < -0.5 then
-            icon = true
-
             if zdiff < -1.5 then
                 icontexture = style.m_dicon[3]
             else
@@ -111,21 +115,18 @@ function module.render(style, kw)
     end
 
     if through_walls then
-        icon = true
         icontexture = style.m_question_icon
     end
 
-    if icon then
-        ---@cast icontexture Texture
-
-        local iconcolor  = style.m_iconcolor
+    if icontexture then
+        local iconcolor  = style.m_icon_color
         local r, g, b, a = iconcolor:compute(kw)
         local ricon      = 0.5 * (r1 + r2)
 
         renderer:renderSprite(
             ricon, theta,
             r, g, b, a * alpha_multiplier,
-            icontexture, 0, style.m_iconscale(kw)
+            icontexture, 0, style.m_icon_scale
         )
     end
 end

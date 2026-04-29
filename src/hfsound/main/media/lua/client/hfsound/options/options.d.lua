@@ -1,8 +1,8 @@
 ---@meta
 
+-- ---@field group hfs.config.Group
 
 ---@class hfs.ConfigSoundInfo.Static
----@field group hfs.config.Group
 ---@field color hfs.OptionsColor
 ---@field style hfs.ColorStyle
 ---@field alpha number
@@ -16,8 +16,7 @@
 ---@class hfs.ConfigSoundInfo.Partial : hfs.ConfigSoundInfo.Static, Partial<hfs.ConfigSoundInfo.Runtime>
 
 ---@alias hfs.ConfigSoundInfo { [hfs.ConfigSound]: hfs.ConfigSoundInfo.Complete | hfs.ConfigSoundInfo.Partial}
----@alias hfs.ConfigSoundOrder { [hfs.config.Group]: hfs.ConfigSound[] }
-
+---@alias hfs.ConfigSoundOrder { group: hfs.config.Group, sounds: hfs.ConfigSound[] }[]
 
 ---@class hfs.ColorPickerWithDefault : umbrella.ModOptions.ColorPicker
 ---@field defaultcolor umbrella.RGBA

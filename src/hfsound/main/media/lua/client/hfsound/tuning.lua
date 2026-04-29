@@ -13,7 +13,7 @@ HFSOUND.hearing = {
     NORMAL                = 1,
     KEEN_HEARING          = 1.2,
     HARD_OF_HEARING       = 0.8,
-    THROUGH_EXTERIOR_WALL = 0.5,
+    THROUGH_EXTERIOR_WALL = 0.666,
 }
 
 HFSOUND.tuning = (function()
@@ -48,25 +48,33 @@ HFSOUND.tuning = (function()
                 define_sound {
                     category = "stumble",
                     frequency = 4,
-                    radius = 6
+                    radius = 3,
+                    style = styles.FOOTSTEP_STYLE,
                 },
                 define_sound {
                     category = "stumble",
                     frequency = 1,
-                    radius = 8
+                    radius = 6,
+                    style = styles.FOOTSTEP_STYLE,
                 }
             },
 
             walk    = {
                 define_sound {
                     category = "walk",
-                    period   = 0.5,
+                    frequency = 4,
                     radius   = 3,
                     style    = styles.FOOTSTEP_STYLE
                 },
                 define_sound {
                     category = "walk",
-                    period   = 4,
+                    period   = 1,
+                    radius   = 6,
+                    style    = styles.FOOTSTEP_STYLE
+                },
+                define_sound {
+                    category = "walk",
+                    period   = 8,
                     radius   = 8,
                     style    = styles.FOOTSTEP_STYLE
                 }

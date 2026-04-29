@@ -41,7 +41,6 @@ local mocks         = require('polyfill/mocks')
 utf8                = require('utf8')
 local input         = require('cli/input')
 
-local xtable        = require('hfsound/reflect/tables')
 local xmath        = require('hfsound/math')
 local xgeom         = require('hfsound/geom')
 local hf_graphics   = require('hfsound/graphics')
@@ -53,7 +52,7 @@ local ScopeRenderer = require('hfsound/scope/renderer')
 
 local options = require "hfsound/options"
 
-xtable.dump(options)
+-- xtable.dump(options)
 
 --------------------------------------------------------------------------------
 local drawTextureIsometric = hf_graphics.drawTextureIsometric
@@ -107,8 +106,7 @@ local function logged_pcall(...)
                 print("error: ", table)
             end
 
-            print()
-            xtable.dump(err)
+            debugLuaTable(err)
         else
             print()
             print(string.format("error: %s", tostring(err)))
@@ -133,7 +131,7 @@ local PROTECTED_ENV = {
     _U      = _G._U or USER_ENV,
     locals  = USER_ENV,
     globals = _G,
-    dump    = xtable.dump,
+    -- dump    = xtable.dump,
 }
 
 local function command_index(_t, k)
@@ -155,10 +153,10 @@ end
 local function command_newindex(_t, k, v)
     if PROTECTED_ENV[k] ~= nil then print(string.format("`%s` is readonly in this context", k)) end
     if WITH_ENV ~= nil then
-        print(string.format("setting %s[\"%s\"] := %s", tostring(WITH_ENV), k, xtable.stringify(v)))
+        -- print(string.format("setting %s[\"%s\"] := %s", tostring(WITH_ENV), k, xtable.stringify(v)))
         rawset(WITH_ENV, k, v)
     else
-        print(string.format("setting %s := %s", k, xtable.stringify(v)))
+        -- print(string.format("setting %s := %s", k, xtable.stringify(v)))
         rawset(USER_ENV, k, v)
     end
 end

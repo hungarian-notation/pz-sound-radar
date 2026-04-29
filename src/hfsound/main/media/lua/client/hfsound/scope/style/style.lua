@@ -2,7 +2,6 @@
 -- local Bezier = xbezier.Bezier
 
 local simple_color = require('hfsound/scope/_color/simple')
-local cyclic_color = require('hfsound/scope/_color/cyclic')
 local colorutil = require('hfsound/colors')
 local Icons = require('hfsound/icons')
 local render = require('hfsound/scope/style/style_render')
@@ -17,15 +16,15 @@ local function constant(v) return function(...) return v end end
 
 -- #region hfs.BasicStyle
 
----@class (partial) hfs.BasicStyle : hfs.Style
----@field m_icon         boolean
----@field m_arc          boolean
----@field m_iconload?    hfs.Icon
----@field m_icontexture? Texture
----@field m_iconscale    hfs.StyleClosure<number>
----@field m_iconcolor    hfs.Color
----@field m_arclen       hfs.StyleClosure<number>
----@field m_color        hfs.Color
+
+---@class hfs.BasicStyle : hfs.Style
+---@field m_arc           false | hfs.Gradient | Texture
+---@field m_arclen        number
+---@field m_color         hfs.Color
+---@field m_icon          false | hfs.Icon | Texture
+---@field m_icon_color    hfs.Color
+---@field m_icon_scale    number
+---@field m_renderer?     hfs.ScopeRenderer
 local Basic = { render = render.render }; Basic.__index = Basic
 
 ---@class hfs.BasicStyle.Kwargs.Icon
@@ -39,13 +38,8 @@ local Basic = { render = render.render }; Basic.__index = Basic
 ---@field gradient?      hfs.Gradient,
 ---@field icon?          hfs.Icon | hfs.BasicStyle.Kwargs.Icon
 
-HFSOUND_BASICSTYLE_COUNT = HFSOUND_BASICSTYLE_COUNT or 0
-
 ---@param kw hfs.BasicStyle.Kwargs
 function Basic.new(kw)
-    HFSOUND_BASICSTYLE_COUNT = HFSOUND_BASICSTYLE_COUNT + 1
-    print("instantiating BasicStyle #" .. tostring(HFSOUND_BASICSTYLE_COUNT))
-
     local obj = setmetatable({}, Basic)
 
     if kw.color then
@@ -54,70 +48,86 @@ function Basic.new(kw)
         obj.m_color = simple_color.new(1.0, 0.75, 0.0, 1.0)
     end
 
-    obj.m_color_desaturated = obj.m_color:desaturate(0.75)
-
     if (type(kw.arc) == "nil") or (type(kw.arc) == "boolean" and kw.arc == true) then
-        obj.m_arc = true
-        obj.m_arclen = constant(2.09433) -- 2 * math.pi / 3
-        obj.m_gradient = kw.gradient or "normal"
+        obj.m_arc = kw.gradient or "normal"
+        obj.m_arclen = 2.09433 -- 2 * math.pi / 3
     elseif type(kw.arc) == "number" then
-        obj.m_arc = true
-        obj.m_arclen = constant(kw.arc)
-        obj.m_gradient = kw.gradient or "normal"
+        obj.m_arc = kw.gradient or "normal"
+        obj.m_arclen = kw.arc
     else
         if getDebug() then error("illegal state") end
         obj.m_arc = false
-        obj.m_arclen = constant(0)
+        obj.m_arclen = 0.0
     end
 
     local icon = kw.icon
 
     if icon == nil then
-        obj.m_icontexture = nil
-        obj.m_iconload = nil
-        obj.m_iconscale = constant(0.5)
-        obj.m_iconcolor = simple_color.new(1, 1, 1, 1)
         obj.m_icon = false
+        obj.m_icon_scale = 0.5
+        obj.m_icon_color = simple_color.new(1, 1, 1, 1)
     elseif type(icon) == "string" then
         ---@cast icon hfs.Icon
-        obj.m_icon = true
-        obj.m_icontexture = nil
-        obj.m_iconload = icon
-        obj.m_iconscale = constant(0.5)
-        obj.m_iconcolor = simple_color.new(1, 1, 1, 1)
+        obj.m_icon = icon
+        obj.m_icon_scale = 0.5
+        obj.m_icon_color = simple_color.new(1, 1, 1, 1)
     else
         ---@cast icon -hfs.Icon
         if type(icon.which) == "string" then
             ---@cast icon.which hfs.Icon
-            obj.m_icon = true
-            obj.m_icontexture = nil
-            obj.m_iconload = icon.which --[[@as hfs.Icon | nil]]
-            obj.m_iconscale = constant(icon.scale or 0.5)
-            obj.m_iconcolor = icon.color or simple_color.new(1, 1, 1, 1)
+            obj.m_icon = icon.which
+            obj.m_icon_scale = icon.scale or 0.5
+            obj.m_icon_color = icon.color or simple_color.new(1, 1, 1, 1)
         elseif instanceof(icon.which, "Texture") then
             ---@cast icon.which Texture
-            obj.m_icon = true
-            obj.m_icontexture = icon.which
-            obj.m_iconload = nil
-            obj.m_iconscale = constant(icon.scale or 0.5)
-            obj.m_iconcolor = icon.color or simple_color.new(1, 1, 1, 1)
+            obj.m_icon = icon.which
+            obj.m_icon_scale = icon.scale or 0.5
+            obj.m_icon_color = icon.color or simple_color.new(1, 1, 1, 1)
         else
             if getDebug() then error("illegal state") end
             obj.m_icon = false
         end
     end
 
+    obj.m_color_desaturated = obj.m_color:desaturate(0.75)
+
     return obj
 end
 
+---@param other hfs.BasicStyle
+function Basic.clone(other)
+    local obj = setmetatable({}, Basic)
 
+    obj.m_arc = other.m_arc
+    obj.m_arclen = other.m_arclen
+    obj.m_color = other.m_color
+    obj.m_color_desaturated = other.m_color_desaturated
+    obj.m_icon = other.m_icon
+    obj.m_icon_color = other.m_icon_color
+    obj.m_icon_scale = other.m_icon_scale
+
+    if other.m_renderer then
+        obj.m_renderer = other.m_renderer
+    end
+end
+
+function Basic:with_arclen(arclen)
+end
+
+---@param renderer hfs.ScopeRenderer
 function Basic:init(renderer)
-    if self.m_iconload then
-        self.m_icontexture = renderer.icons[self.m_iconload]
-        assert(self.m_icontexture ~= nil, "no such icon", self.m_iconload)
-        self.m_iconload = nil
+    self.m_renderer = renderer
+
+    if type(self.m_arc) == "string" then
+        ---@cast self.m_arc hfs.Gradient
+        self.m_arc = renderer.gradients[self.m_arc]
     end
 
+
+    if type(self.m_icon) == "string" then
+        ---@cast self.m_icon hfs.Icon
+        self.m_icon = renderer.icons[self.m_icon]
+    end
 
     self.m_uicon = {
         renderer.icons[Icons.ARROW_UP],
@@ -132,21 +142,7 @@ function Basic:init(renderer)
     }
 
     self.m_question_icon = renderer.icons[Icons.SYMBOL_QUESTION]
-
-    if self.m_icon then
-        assert(self.m_icontexture ~= nil, "missing texture for icon")
-    end
 end
-
--- local STEP_BEZIER = Bezier({ 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 })
-
--- local function round_bezier(n)
---     return math.floor(n) + STEP_BEZIER(n % 1)
--- end
-
-
-
-
 
 -- #endregion Scope.Style.Basic
 
@@ -155,9 +151,6 @@ return {
         parse = colorutil.parse_rgba,
         Solid = simple_color,
         solid = simple_color.new,
-        Cyclic = cyclic_color,
-        cyclic = cyclic_color.new,
-
         WHITE = simple_color.new(1, 1, 1, 1),
     },
 

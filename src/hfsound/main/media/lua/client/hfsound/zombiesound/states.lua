@@ -25,12 +25,13 @@ module.CATEGORIES = {
 
 ---@type { [string]: hfs.StateCategory }
 module.ZOMBIE_STATES = {
-    FakeDeadAttackState               = "silent",
-    FakeDeadZombieState               = "silent",
-    ZombieFallingState                = "silent",
-    ZombieSittingState                = "silent",
-    ZombieTurnAlerted                 = "silent",
-    ThumpState                        = "silent", -- thumps are world sounds
+    -- FakeDeadAttackState               = "silent",
+    -- FakeDeadZombieState               = "silent",
+    -- ZombieFallingState                = "silent",
+    -- ZombieSittingState                = "silent",
+    -- ZombieTurnAlerted                 = "silent",
+    -- ThumpState emits world sounds, we use those instead.
+    -- ThumpState                        = "silent", 
     IdleState                         = "idle",
     ZombieEatBodyState                = "idle",
     ZombieFaceTargetState             = "idle",

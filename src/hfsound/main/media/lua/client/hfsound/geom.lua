@@ -36,10 +36,10 @@ local sin = math.sin
 ---@return number
 ---@return number
 function geom.rotate_vector(theta, x, y)
-    local xCos = cos(theta) * x; -- math.cos(theta) * x;
-    local xSin = sin(theta) * x; -- math.sin(theta) * x;
-    local yCos = cos(theta) * y; -- math.cos(theta) * y;
-    local ySin = sin(theta) * y; -- math.sin(theta) * y;
+    local xCos = cos(theta) * x;
+    local xSin = sin(theta) * x;
+    local yCos = cos(theta) * y;
+    local ySin = sin(theta) * y;
     local x1 = xCos - ySin;
     local y1 = yCos + xSin;
     return x1, y1

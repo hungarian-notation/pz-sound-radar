@@ -1,14 +1,6 @@
 ---@diagnostic disable: preferred-local-alias
 if not getDebug() then return end
 
-hftable = require('hfsound/reflect/tables')
-
-if dump == nil or dump == hfdump then
-    dump = hftable.dump
-end
-
-
-hfdump           = hftable.dump
 
 ---@class (partial) _HFSOUND
 ---@field debug _HFSOUND_DEBUG
@@ -21,7 +13,7 @@ HFSOUND          = HFSOUND or {}
 ---@alias CircleRequest [number, number, number, number, number, number, number, number, number]
 
 ---@class _HFSOUND_DEBUG
----@field m_zsinst? hfs.Instrumentation
+---@field m_zsinst? hfs.DebugInstrumentation
 HFSOUND.debug    = HFSOUND.debug or {
     ---@type {
     ---arr?:     CircleRequest[],
@@ -34,7 +26,7 @@ HFSOUND.debug    = HFSOUND.debug or {
     ---@type {[string]: boolean}|boolean
     reporting = false,
 
-    ---@type hfs.Instrumentation[]
+    ---@type hfs.DebugInstrumentation[]
     _instrumentations = {}
 }
 
@@ -43,16 +35,16 @@ local debug      = HFSOUND.debug
 ---@class hfs.InstrumentationArgs
 ---@field owner table
 ---@field name string
----@field pre?  fun( self:hfs.Instrumentation, ...): bool, table?
----@field post? fun( self:hfs.Instrumentation, ...)
+---@field pre?  fun( self:hfs.DebugInstrumentation, ...): bool, table?
+---@field post? fun( self:hfs.DebugInstrumentation, ...)
 ---@field [string] any
 
----@class hfs.Instrumentation : hfs.InstrumentationArgs
+---@class hfs.DebugInstrumentation : hfs.InstrumentationArgs
 ---@field cancel boolean
 ---@field target function
----@field pre  fun( self:hfs.Instrumentation, ...): bool, table?
----@field post fun( self:hfs.Instrumentation, ...)
----@field clear fun( self:hfs.Instrumentation)
+---@field pre  fun( self:hfs.DebugInstrumentation, ...): bool, table?
+---@field post fun( self:hfs.DebugInstrumentation, ...)
+---@field clear fun( self:hfs.DebugInstrumentation)
 ---@field [string] any
 
 ---@param instrumentation hfs.InstrumentationArgs
@@ -64,7 +56,7 @@ debug.instrument = function(instrumentation)
         return
     end
 
-    ---@cast instrumentation hfs.Instrumentation
+    ---@cast instrumentation hfs.DebugInstrumentation
     instrumentation.target = rawget(instrumentation.owner, instrumentation.name)
 
     if instrumentation.target == nil then

@@ -6,6 +6,8 @@ require('hfsound/tuning')
 local worldsounds  = require('hfsound/worldsound/classifier')
 local zombiesounds = require('hfsound/zombiesound/simulator')
 local Scope        = require('hfsound/scope/scope')
+local events       = require("hfsound/events")
+local options      = require("hfsound/options")
 
 ---@class (partial) _HFSOUND
 ---@field runtime   hfs.Runtime?
@@ -81,7 +83,21 @@ function Runtime.new()
     obj.finalizers   = {}
     obj.simulate     = true
     obj.hooks        = hook(obj)
+    obj.config_dirty = true
+
+    local function set_config_dirty()
+        obj.config_dirty = true
+    end
+
+    events.subscribe(options.options.enable_zombie_sounds, "onChangeApply", set_config_dirty)
+    obj:onConfigChanged()
+
     return obj
+end
+
+function Runtime:onConfigChanged()
+    self.hooks.set_hookzombies(options.options.enable_zombie_sounds:getValue())
+    self.config_dirty = false
 end
 
 function Runtime:terminate()
@@ -111,6 +127,10 @@ function Runtime:OnGameBoot()
 end
 
 function Runtime:OnTick()
+    if self.config_dirty then
+        self:onConfigChanged()
+    end
+
     local gt = getGameTime()
     local speedindex = getGameSpeed()
     local delta, multiplied_delta

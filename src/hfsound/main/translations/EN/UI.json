@@ -2,6 +2,8 @@
   "UI_options_hfsound": {
     "Options": "Sound Visualizer Options",
 
+    "General": "General",
+    "EnableZombieSounds": "Simulate Zombie Sounds",
 
     "SoundEnable": {
       "@": "Enabled Sounds",
@@ -66,7 +68,7 @@
       },
 
       ".Living": {
-        "@": "Living",
+        "@": "Colors: Players & Animals",
         ".Player": "Players",
         ".Animal": "Animals"
       },
@@ -86,7 +88,7 @@
       },
 
       ".Vehicle": {
-        "@": "Vehicles",
+        "@": "Colors: Vehicles",
         ".Engine": "Engines",
         ".Alarm": "Horns and Alarms",
         ".Lightbar": "Sirens"

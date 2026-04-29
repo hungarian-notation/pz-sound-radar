@@ -1,5 +1,5 @@
 local colors = require('hfsound/colors')
-local xtabla = require('hfsound/reflect/tables')
+local events = require("hfsound/events")
 
 -- #region hfs.Color
 
@@ -21,29 +21,37 @@ local ConfiguredColor = {}; ConfiguredColor.__index = ConfiguredColor
 ---@param kw hfs.ConfiguredColor.Kwargs
 ---@return hfs.ConfiguredColor
 function ConfiguredColor.new(kw)
-    local obj      = setmetatable({}, ConfiguredColor)
+    local obj            = setmetatable({}, ConfiguredColor)
 
     ---@type boolean
-    obj.dirty      = true
-    obj.style      = kw.style or "normal"
+    obj.dirty            = true
+    obj.style            = kw.style or "normal"
 
     ---@type fun(self, hfs.RenderKwargs): number, number, number, number
-    obj.compute    = ConfiguredColor["compute_" .. obj.style]
+    obj.compute          = ConfiguredColor["compute_" .. obj.style]
 
-    obj.config     = kw.config
-    obj.option     = kw.option
-    obj.saturation = kw.saturation or 1.0
+    obj.config           = kw.config
+    obj.option           = kw.option
+    obj.saturation       = kw.saturation or 1.0
 
-    obj.r          = 0.0
-    obj.g          = 0.0
-    obj.b          = 0.0
-    obj.a          = kw.alpha or 0.666
+    obj.r                = 0.0
+    obj.g                = 0.0
+    obj.b                = 0.0
+    obj.configured_alpha = kw.alpha or 0.666
+    obj.a                = obj.configured_alpha
 
     -- optimization for hot path computation
-    obj.a_div_2    = obj.a / 2
-    obj.a_div_4    = obj.a / 4
+    obj.a_div_2          = obj.a / 2
+    obj.a_div_4          = obj.a / 4
 
-    obj.config:subscribe(obj.setdirty, obj)
+
+    ---@param option umbrella.ModOptions.ColorPicker
+    ---@param color umbrella.RGBA
+    local function change_listener(option, color, ...)
+        obj:update(color)
+    end
+
+    events.subscribe(kw.option, "onChangeApply", change_listener)
     obj:setdirty()
 
     return obj
@@ -53,14 +61,25 @@ function ConfiguredColor:setdirty()
     self.dirty = true
 end
 
-function ConfiguredColor:update()
-    print("update ", self.style)
-    local color            = self.option.color
-    self.r, self.g, self.b = colors.desaturate(color.r, color.g, color.b, 1 - self.saturation)
-    self.dirty             = false
+---@param color? umbrella.RGBA
+function ConfiguredColor:update(color)
+    print("updating configured color for ", self.option.id)
+    color         = color or self.option.color
+    local r, g, b = color.r, color.g, color.b
+
+    if r == 0 and g == 0 and b == 0 then
+        self.r, self.g, self.b = 0, 0, 0
+        self.a = 0
+    else
+        self.r, self.g, self.b = colors.desaturate(r, g, b, 1 - self.saturation)
+        self.a = self.configured_alpha
+    end
+
+    self.dirty = false
 end
 
 ---@param factor number
+---@return hfs.Color
 function ConfiguredColor:desaturate(factor)
     return ConfiguredColor.new {
         config = self.config,
@@ -130,11 +149,12 @@ end
 function ConfiguredColor:compute_flash(kw)
     if self.dirty then self:update() end
     local factor = cosine(4 * PI * kw.entry.m_age) * 0.5 + 0.5
-    local r, g, b
+    local r, g, b, a
     r = 1 - (1 - self.r) * factor
     g = 1 - (1 - self.g) * factor
     b = 1 - (1 - self.b) * factor
-    return r, g, b, self.a
+    a = self.a * factor
+    return r, g, b, a
 end
 
 -----------------------------------------
@@ -142,7 +162,10 @@ end
 -- Each instance should have its own compute method based on its style
 -- If Lua is checking the prototype, it means we're in an illegal state.
 
-function ConfiguredColor:compute() error("virtual function `compute` not set") end
+function ConfiguredColor:compute(kw)
+    if getDebug() then error("virtual function `compute` not set") end
+    return self.r, self.g, self.b, self.a
+end
 
 -- #endregion
 

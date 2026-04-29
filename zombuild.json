@@ -40,7 +40,7 @@
                     {
                         "source": "src/hfsound/main/media/lua",
                         "prefix": "media/lua",
-                        "ignore": "*.d.lua"
+                        "ignore": [ "*.d.lua", "./tests/**" ]
                     },
                     {
                         "source": ".generated/lua",

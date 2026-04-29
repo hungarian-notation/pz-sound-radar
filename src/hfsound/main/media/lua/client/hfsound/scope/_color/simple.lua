@@ -20,6 +20,7 @@ function SimpleColor.new(...)
     return obj
 end
 
+---@return hfs.Color
 function SimpleColor:desaturate(factor)
     local r, g, b = colorutil.desaturate(self.r, self.g, self.b, factor)
     return SimpleColor.new(r, g, b, self.a)

@@ -1,7 +1,6 @@
 package.path = package.path .. ";../.dist/Contents/mods/hfsound/42.16/media/lua/client/?.lua"
 package.path = package.path .. ";../.dist/Contents/mods/hfsound/42.16/media/lua/shared/?.lua"
 
-libtable = require "hfsound/reflect/tables"
 ---@diagnostic disable-next-line: unresolved-require
 libtimer = require "love.timer"
 
@@ -43,7 +42,7 @@ while true do
     if timeout() then
         print("!!! timeout !!!")
         print("dumping last message...")
-        libtable.dump(last_message, 2)
+        -- libtable.dump(last_message, 2)
         print()
 
         os.exit()

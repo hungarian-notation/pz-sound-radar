@@ -71,13 +71,7 @@ local ZombRandFloat = ZombRandFloat
 local ipairs = ipairs
 local unpack = unpack
 
----@param event_rate number average rate of events per second
-function ZombieSoundSimulator:random_event(event_rate)
-    local delta = GameTime_getRealworldSecondsSinceLastUpdate(gameTime)
-    local chance = 1 - math_exp(-event_rate * delta)
-    local roll = ZombRandFloat(0, 1)
-    return roll < chance
-end
+local ZOMBIE_STATES = states.ZOMBIE_STATES
 
 ---@param zombie IsoZombie
 function ZombieSoundSimulator:simulate(zombie)
@@ -85,25 +79,32 @@ function ZombieSoundSimulator:simulate(zombie)
     local zombie_y = zombie:getY()
 
     -- This changes between zombies updates within a single tick.
-    -- MovingObjectUpdateScheduler
     local delta = GameTime_getRealworldSecondsSinceLastUpdate(gameTime)
 
-    local state_category = states.getcategory(zombie)
+    local state_category = ZOMBIE_STATES[zombie:getCurrentStateName()]
+    if state_category == nil then 
+        return
+    end
+
     local x1, y1, x2, y2 = unpack(self.m_category_bounds[state_category])
 
     -- ignore zombies outside of the AABB of our maximum hearing radius
     if zombie_x < x1 or zombie_x > x2 or zombie_y < y1 or zombie_y > y2 then
-        -- return
+        return
     end
 
     -- FIXME tuning.zombies needs to be an upvalue at release
-
     local state_sounds = HFSOUND.tuning.zombies[state_category] 
 
     for _i, sound in ipairs(state_sounds) do
+        -- Compute the chance of the zombie making an audible noise in the
+        -- time since it was last simulated.
+
+        -- This is the the complement of the Poisson distribution for k=0, 
+        -- i.e. one minus the chance that zero events occurred 
+
         local chance = 1 - math_exp(-sound.frequency * delta)
         local roll = ZombRandFloat(0, 1)
-
         if roll < chance then
             self.m_scope:offerzombiesound(zombie:getUID(), sound, zombie)
         end
