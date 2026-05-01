@@ -1,30 +1,3 @@
---[[
-
-    This source file is released under the MIT/Expat License. Only files
-    in which this header appears are covered by this license.
-
-    Copyright © 2026 Christopher Bode
-
-    Permission is hereby granted, free of charge, to any person obtaining a
-    copy of this software and associated documentation files (the “Software”),
-    to deal in the Software without restriction, including without limitation
-    the rights to use, copy, modify, merge, publish, distribute, sublicense,
-    and/or sell copies of the Software, and to permit persons to whom the
-    Software is furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
---]]
-
 local module = {}
 
 module.bezier = require('hfsound/_math/_bezier')
@@ -55,6 +28,7 @@ local function lerp(min, max, value)
     return value * (max - min) + min
 end
 
+if PZMath then lerp = (PZMath.lerp --[[@as fun(a:number,b:number,x:number): number]]) end
 
 ---@param c00 number
 ---@param c10 number
@@ -82,6 +56,8 @@ local function lerp_clamped(min, max, value)
         return value * (max - min) + min
     end
 end
+
+if PZMath then lerp_clamped = (PZMath.c_lerp --[[@as fun(a:number,b:number,x:number): number]]) end
 
 ---@param value number The point within the range you want to calculate.
 ---@param a number The start of the range.
@@ -115,6 +91,14 @@ local function ilerp_clamped(a, b, value)
     end
 end
 
+local function linear_projection(range_from, range_to, domain_from, domain_to, x)
+    return lerp(range_from, range_to, ilerp(domain_from, domain_to, x)) -- XXX reduce
+end
+
+local function linear_projection_clamped(range_from, range_to, domain_from, domain_to, x)
+    return lerp_clamped(range_from, range_to, ilerp_clamped(domain_from, domain_to, x)) -- XXX reduce
+end
+
 local function smoothstep(a, b, x)
     if a < b then
         if x < a then return 0 elseif x > b then return 1 end
@@ -132,6 +116,8 @@ module.lerp = lerp
 module.lerp_clamped = lerp_clamped
 module.ilerp = ilerp
 module.ilerp_clamped = ilerp_clamped
+module.linear_projection = linear_projection
+module.linear_projection_clamped = linear_projection_clamped
 module.smootherstep = smoothstep
 module.bilinear = { lerp = lerp_bilinear }
 
