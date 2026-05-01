@@ -1,8 +1,7 @@
+local options         = require("hfsound/options")
 local styles          = require('hfsound/scope/style/style')
-local options         = require("hfsound/options/options")
 
 local module          = {}
-local opts            = options.get_options()
 local math_pi         = math.pi
 
 -- module.DEFAULT_STYLE  = styles.basic {
@@ -11,23 +10,23 @@ local math_pi         = math.pi
 -- }
 
 module.BREATH_STYLE   = styles.basic {
-    color = opts:getconfiguredcolor("ZombieIdle"),
+    color = options:getconfiguredcolor("ZombieIdle"),
     arc   = math_pi * 2 / 3
 }
 
 module.FOOTSTEP_STYLE = styles.basic {
-    color = opts:getconfiguredcolor("ZombieStep"),
+    color = options:getconfiguredcolor("ZombieStep"),
     arc   = math_pi * 1
 }
 
 module.CLAMBER_STYLE  = styles.basic {
-    color    = opts:getconfiguredcolor("ZombieClamber"),
+    color    = options:getconfiguredcolor("ZombieClamber"),
     arc      = math_pi * 1,
     gradient = "edge"
 }
 
 module.ATTACK_STYLE   = styles.basic {
-    color = opts:getconfiguredcolor("ZombieAggression"),
+    color = options:getconfiguredcolor("ZombieAggression"),
     arc   = math_pi * 1
 }
 

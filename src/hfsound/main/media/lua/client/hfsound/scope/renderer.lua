@@ -1,3 +1,5 @@
+local opt = require("hfsound/options")
+
 local geomlib = require('hfsound/geom')
 local rotate_vector = geomlib.rotate_vector
 local project_iso = geomlib.project_iso
@@ -8,10 +10,6 @@ local drawTexture = hfgfx.drawTexture
 
 local Gradients = require('hfsound/gradients')
 local Icons = require('hfsound/icons')
-
-local options = require("hfsound/options/options")
-local opt = options.get_options()
-
 
 local PI    = 3.141592653589793
 local TAU   = 2 * PI
@@ -160,12 +158,12 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
     local vary_alpha       = inner_angle < TAU
 
     -- the texture's `u` coordinates
-    local tex_u_1 = 0.5
-    local tex_u_2 = 0.5
+    local tex_u_1          = 0.5
+    local tex_u_2          = 0.5
 
-    local theta_2 = from
-    local sin_theta_2 = sin(from)
-    local cos_theta_2 = cos(from)
+    local theta_2          = from
+    local sin_theta_2      = sin(from)
+    local cos_theta_2      = cos(from)
 
     -- XXX
     -- This still leaves a bit of performance on the floor. We should
@@ -212,7 +210,7 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
         -- cos_theta_2 = cos(theta_2)
 
         -- XXX Potential Optimization
-        -- project_isooff does the same and has the same signature as 
+        -- project_isooff does the same and has the same signature as
         -- IsoUtils.XToScreen and IsoUtils.YToScreen, but at the same time
         -- with a multi-return. It may be worth investigating to see if
         -- calling across the Lua/Java boundary with the arguments list
@@ -280,8 +278,8 @@ function ScopeRenderer:renderArc(gradient, r1, r2, theta, length, r, g, b, a)
     return steps
 end
 
----Draws a sprite relative to the player at a position given by the polar 
----coordinates `theta` and `radius` 
+---Draws a sprite relative to the player at a position given by the polar
+---coordinates `theta` and `radius`
 ---@param radius number
 ---@param theta number radians (in isometric coordinate system)
 ---@param r number red

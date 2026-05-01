@@ -1,5 +1,5 @@
 local colors = require('hfsound/colors')
-local events = require("hfsound/events")
+local events = require('hfsound/util/events')
 
 -- #region hfs.Color
 

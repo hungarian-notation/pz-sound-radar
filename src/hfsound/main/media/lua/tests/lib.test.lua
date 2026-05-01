@@ -15,7 +15,7 @@ function load_tests(filename)
     function testenv_metatable.__newindex(t, k, v)
         if (type(k) == "string" and type(v) == "function") then
             table.insert(local_tests, { id = k, chunk = v, file = filename })
-            print("defined test: " .. k)
+            -- print("defined test: " .. k)
         end
         _G[k] = v
     end
@@ -44,9 +44,9 @@ function execute_tests()
             local result, err = xpcall(test.chunk, debug.traceback)
 
             if result then
-                print(ansi(32), "PASSED", test.id, ansi(0))
+                print(ansi(32), "PASSED", test.id, ansi(0), ansi(2), test.file)
             else
-                print(ansi(31), "FAILED", test.id, ansi(0))
+                print(ansi(31), "FAILED", test.id, ansi(0), ansi(2), test.file)
                 print("\t", err)
             end
         end
@@ -126,7 +126,7 @@ local function equals(a, b, assertive, path)
 
         return true
     else
-        if assertive then validation_error("different values: " .. tostring(a) .. " vs " .. tostring(b), path) end
+        if assertive then validation_error("different values: '" .. tostring(a) .. "' vs '" .. tostring(b) .. "'", path) end
         return false
     end
 end
@@ -134,5 +134,7 @@ end
 function assert_equals(a, b)
     local ok, err = pcall(function() equals(a, b, true, {}) end)
 
-    if not ok then print(err) ; error(err,2) end
+    if not ok then
+        print(err); error(err, 2)
+    end
 end

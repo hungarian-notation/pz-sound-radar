@@ -6,9 +6,38 @@ if TERM == "xterm-color" or TERM == "xterm-256color" then
     COLORS = true
 end
 
-local CONTROL_ESC = string.char(27)
-local ANSI_CSI = { CONTROL_ESC, "[" }
+local CONTROL_ESC  = string.char(27)
+local ANSI_CSI     = { CONTROL_ESC, "[" }
 local ANSI_PATTERN = string.char(27) .. "%[[^@-~]*[^@-~]"
+
+---@return boolean
+function is_stdout_tty()
+    local function check_unix()
+        local is_tty = io.popen("tty > /dev/null 2>&1 && echo yes || echo no"):read("*l")
+        if is_tty == "yes" then
+            return true
+        end
+        return false
+    end
+
+    local ok, err = check_unix()
+
+    if ok then
+        return true
+    else
+        print(err)
+    end
+
+    local f = io.open("/dev/tty", "r")
+    if f then
+        f:close()
+        return true
+    else
+        return false
+    end
+end
+
+COLORS = COLORS and is_stdout_tty()
 
 ---@param str string
 function ansi_strip(str)

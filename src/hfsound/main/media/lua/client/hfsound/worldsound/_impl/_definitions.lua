@@ -1,8 +1,8 @@
+local options = require("hfsound/options/options")
 local taggers = require('hfsound/worldsound/_impl/_taggers')
 local styles = require('hfsound/scope/style/style')
 local color = styles.colors.solid
 local Icons = require('hfsound/icons')
-local options = require("hfsound/options/options")
 local opts = options.get_options()
 
 ---type guarding validator for classifiers

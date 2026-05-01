@@ -1,13 +1,11 @@
--- local ArcRenderer = require('hfsound/arcrenderer')
--- local xmath       = require('hfsound/xmath')
+local options = require("hfsound/options")
 
 require('hfsound/tuning')
 
 local worldsounds  = require('hfsound/worldsound/classifier')
 local zombiesounds = require('hfsound/zombiesound/simulator')
 local Scope        = require('hfsound/scope/scope')
-local events       = require("hfsound/events")
-local options      = require("hfsound/options")
+local events       = require('hfsound/util/events')
 
 ---@class (partial) _HFSOUND
 ---@field runtime   hfs.Runtime?

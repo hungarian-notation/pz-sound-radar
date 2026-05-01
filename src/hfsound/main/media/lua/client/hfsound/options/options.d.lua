@@ -25,3 +25,5 @@
 ---@class hfs.MappedSlider : umbrella.ModOptions.Slider
 ---@field mappedValue number
 ---@field mapping fun(x:number):number
+
+---@alias Callback_OnConfigChanged fun(target: unknown, config: hfs.Options, ...: unknown )

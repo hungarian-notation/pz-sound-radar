@@ -1,5 +1,5 @@
 -- local xbezier = require('hfsound/bezier')
--- local Bezier = xbezier.Bezier
+-- local Bezier = bezier.Bezier
 
 local simple_color = require('hfsound/scope/_color/simple')
 local colorutil = require('hfsound/colors')
@@ -43,7 +43,7 @@ function Basic.new(kw)
     local obj = setmetatable({}, Basic)
 
     if kw.color then
-        obj.m_color = kw.color
+            obj.m_color = kw.color
     else
         obj.m_color = simple_color.new(1.0, 0.75, 0.0, 1.0)
     end

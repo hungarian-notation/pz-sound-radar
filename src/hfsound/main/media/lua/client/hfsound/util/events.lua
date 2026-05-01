@@ -41,7 +41,7 @@ local module = {}
 
 -- #region class: EventDispatch
 
----@class hfs.EventDispatch
+---@class hfs.EventDispatch<T>
 local EventDispatch = {}; EventDispatch.__index = EventDispatch
 
 ---A subscription instance returned from `EventDispatch:subscribe` is the
@@ -49,11 +49,12 @@ local EventDispatch = {}; EventDispatch.__index = EventDispatch
 ---
 ---Mutating the `callback` field can redirect the events to a different
 ---function.
----@class hfs.EventDispatch.Subscription
----@field callback              fun(...):unknown subscription callback
----@field dispatch              hfs.EventDispatch
+---@class hfs.EventDispatch.Subscription<T>
+---@field callback              fun(T,...):unknown subscription callback
+---@field dispatch              hfs.EventDispatch<T>
 ---@field context               any
 ---@field cancel                fun(self: hfs.EventDispatch.Subscription):void
+
 
 ---@param context? any
 ---@param primordial? function
@@ -70,17 +71,26 @@ function EventDispatch.new(context, primordial)
     return obj
 end
 
-function EventDispatch:__call(...)
+---@param first T
+---@param ... unknown?
+function EventDispatch:invoke(first, ...)
     local subscribers = self._subscribers
+
     for _, subscriber in ipairs(subscribers) do
-        subscriber.callback(...)
+        subscriber.callback(first, ...)
+    end
+
+    if self._primordial ~= nil then
+        self._primordial(first, ...)
     end
 end
 
+EventDispatch.__call = EventDispatch.invoke
+
 ---Adds the callback function to this dispatch's subscribers, returning a
 ---reference to the created subscription record.
----@param callback function
----@return hfs.EventDispatch.Subscription
+---@param callback fun(T,...):void
+---@return hfs.EventDispatch.Subscription<T>
 function EventDispatch:subscribe(callback)
     if getDebug() then
         for _, existing in ipairs(self._subscribers) do
