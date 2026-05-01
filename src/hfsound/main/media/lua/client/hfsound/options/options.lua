@@ -4,7 +4,17 @@ local color = require('hfsound/scope/color')
 
 -- #region class: HfSoundOptions
 
+---holds references to the ModOptions API instances
+---@class (exact) hfs.Options.Controls
+---@field tickbox_enable_zombie_sounds umbrella.ModOptions.TickBox
+---@field slider_quality umbrella.ModOptions.Slider
+---@field tickbox_dynamic_arcs umbrella.ModOptions.TickBox
+---@field button_resetcolors umbrella.ModOptions.Button
+-- ---@field slider_radius_min umbrella.ModOptions.Slider
+-- ---@field slider_radius_max umbrella.ModOptions.Slider
+
 ---@class hfs.Options
+---@field controls hfs.Options.Controls
 local HfSoundOptions = {}; HfSoundOptions.__index = HfSoundOptions
 
 ---@param name string
@@ -32,95 +42,67 @@ local function option_args(name, ...)
     return name, string.format("UI_options_%s_%s", "hfsound", name), ...
 end
 
----@alias hfs.Options.SoundInfo { [hfs.ConfigSound]: hfs.ConfigSoundInfo.Complete }
 
-local definitions
+local definitions = options_definitions.create_instance()
+local singleton_guard = false
 
 ---@return hfs.Options
 function HfSoundOptions.new()
-    definitions = definitions or options_definitions.initialize()
-
-    HFSOUND = HFSOUND or {}
-
-    if HFSOUND.options then
-        return HFSOUND.options
-    end
-
-    local obj = setmetatable({}, HfSoundOptions)
-
+    if singleton_guard then error("multiple invocations of HfSoundOptions.new()") else singleton_guard = true end
+    local obj       = setmetatable({}, HfSoundOptions)
+    HFSOUND         = HFSOUND or {}
     HFSOUND.options = obj
+    obj.info        = (definitions.Info --[[@as { [hfs.ConfigSound]: hfs.ConfigSoundInfo.Complete }]])
+    obj.controls    = HfSoundOptions._build_controls(obj)
+    return obj
+end
 
-
-    -- ---@type { listener:Callback_OnConfigChanged, target: any }[]
-    -- obj.listeners         = {}
-
-    -- obj._onconfigapply    = function(...) obj:_broadcast(...) end
-
-    -- local soundinfo    = get_configurable_sounds()
-    obj.order     = definitions.Order
-    obj.info      = definitions.Info
-    local wrapped = PZAPI.ModOptions:create(kt_option "Options")
-
-    -- This isn't injection, umbrella's types are just inaccurate in this corner of the api.
-    ---@diagnostic disable-next-line: inject-field
-    -- wrapped.onChangeApply = obj._onconfigapply
-
-    local options = {
-        ---@type hfs.ColorPickerWithDefault[]
-        colors = {}
-    }
-
-    wrapped:addTitle(t_option "General")
-
-    options.enable_zombie_sounds = wrapped:addTickBox(option_args("EnableZombieSounds", true))
-
-    wrapped:addTitle(t_option "Display")
-
-    options.quality    = wrapped:addSlider(option_args("DisplayQuality", 10, 50, 1, 30))
-    options.radius_min = wrapped:addSlider(option_args("DisplayRadiusMin", 0.2, 4, 0.1, 1))
-    options.radius_max = wrapped:addSlider(option_args("DisplayRadiusMax", 2, 10, 0.5, 5))
-
-    wrapped:addTitle(t_option "SoundColor")
-
-
+---@return hfs.Options.Controls
+function HfSoundOptions:_build_controls()
+    local mod_options = PZAPI.ModOptions:create(kt_option "Options")
+    local controls    = {}
+    mod_options:addTitle(t_option "General")
+    controls.tickbox_enable_zombie_sounds = mod_options:addTickBox(option_args("EnableZombieSounds", true))
+    mod_options:addTitle(t_option "Display")
+    controls.slider_quality = mod_options:addSlider(option_args("DisplayQuality", 10, 50, 1, 30))
+    controls.tickbox_dynamic_arcs = mod_options:addTickBox(option_args("DisplayDynamicArcs", true))
+    
+    -- controls.slider_radius_min = mod_options:addSlider(option_args("DisplayRadiusMin", 0.2, 4, 0.1, 1))
+    -- controls.slider_radius_max = mod_options:addSlider(option_args("DisplayRadiusMax", 2, 12, 0.2, 8))
+    mod_options:addTitle(t_option "SoundColor")
     for _, category in pairs(definitions.Order) do
-        local sounds_group = category.group
-        local sounds       = category.sounds
-
-        wrapped:addTitle(t_option("SoundColor" .. sounds_group))
-
-        for _, soundtype in ipairs(sounds) do
-            local info = obj.info[soundtype]
-            local r, g, b = color.parse(info.color)
-            ---@class hfs.XColorPicker : umbrella.ModOptions.ColorPicker
-            info.opt_color = wrapped:addColorPicker(option_args("SoundColor" .. soundtype, r, g, b, 1))
-            info.opt_color.defaultcolor = { r = r, g = g, b = b, a = 1 }
-            -- options.sounds[soundtype].color = info.opt_color
-            table.insert(options.colors, info.opt_color)
-
-
-            info.colorobject = color.ConfiguredColor.new({
-                style = info.style,
-                config = obj,
-                option = info.opt_color,
-                alpha = info.alpha or 0.5,
-                saturation = 1.0,
-            })
+        mod_options:addTitle(t_option("SoundColor" .. category.group))
+        for _, soundtype in ipairs(category.sounds) do
+            self:_build_colorpicker(mod_options, soundtype)
         end
     end
-
-    obj._btn_reset = wrapped:addButton(option_args("ResetColorsButton",
+    controls.button_resetcolors = mod_options:addButton(option_args("ResetColorsButton",
         "UI_options_tooltip_hfsound_ResetColorsButton",
-        obj._promptresetcolors, obj))
+        self._promptresetcolors, self))
+    return controls
+end
 
-    ---@cast obj.info { [hfs.ConfigSound]: hfs.ConfigSoundInfo.Complete }
+---@param mod_options PZAPI.ModOptions.Options
+---@param soundtype hfs.ConfigSound
+function HfSoundOptions:_build_colorpicker(mod_options, soundtype)
+    self._resetcolors_targets = self._resetcolors_targets or {}
 
-    obj.order      = obj.order
-    -- obj.sounds     = _sound_info
-    obj.info       = obj.info
-    obj.options    = options
+    local info = self.info[soundtype]
+    local r, g, b = color.parse(info.color)
+    ---@class hfs.XColorPicker : umbrella.ModOptions.ColorPicker
+    info.opt_color = mod_options:addColorPicker(option_args("SoundColor" .. soundtype, r, g, b, 1))
+    info.opt_color.defaultcolor = { r = r, g = g, b = b, a = 1 }
+    -- options.sounds[soundtype].color = info.opt_color
+    table.insert(self._resetcolors_targets, info.opt_color)
 
-    return obj
+
+    info.colorobject = color.ConfiguredColor.new({
+        style = info.style,
+        config = self,
+        option = info.opt_color,
+        alpha = info.alpha or 0.5,
+        saturation = 1.0,
+    })
 end
 
 ---@param sound hfs.ConfigSound
@@ -153,7 +135,7 @@ function HfSoundOptions:_promptresetcolors()
 end
 
 function HfSoundOptions:_resetcolors()
-    for _, option in ipairs(self.options.colors) do
+    for _, option in ipairs(self._resetcolors_targets) do
         assert(option.defaultcolor ~= nil)
         option:setValue(option.defaultcolor)
     end
@@ -174,9 +156,10 @@ local module = { HfSoundOptions = HfSoundOptions }
 ---@field options hfs.Options?
 HFSOUND = HFSOUND or {}
 
+HFSOUND.options = HFSOUND.options or module.HfSoundOptions.new()
+
+---@return hfs.Options
 function module.get_options()
-    local options = module.HfSoundOptions.new()
-    assert(HFSOUND.options == options)
     return HFSOUND.options
 end
 

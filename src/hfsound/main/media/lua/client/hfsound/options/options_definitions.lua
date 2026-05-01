@@ -1,4 +1,4 @@
-local function initialize()
+local function create_instance()
     ---@enum  hfs.config.Group
     local Group = {
         Zombie  = "Zombie",
@@ -130,4 +130,4 @@ local function initialize()
     }
 end
 
-return { initialize = initialize }
+return { create_instance = create_instance }

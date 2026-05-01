@@ -1,4 +1,4 @@
-local options = require("hfsound/options")
+local optionslib = require("hfsound/options/options")
 
 require('hfsound/tuning')
 
@@ -87,14 +87,14 @@ function Runtime.new()
         obj.config_dirty = true
     end
 
-    events.subscribe(options.options.enable_zombie_sounds, "onChangeApply", set_config_dirty)
+    events.subscribe(optionslib.get_options().controls.tickbox_enable_zombie_sounds, "onChangeApply", set_config_dirty)
     obj:onConfigChanged()
 
     return obj
 end
 
 function Runtime:onConfigChanged()
-    self.hooks.set_hookzombies(options.options.enable_zombie_sounds:getValue())
+    self.hooks.set_hookzombies(optionslib.get_options().controls.tickbox_enable_zombie_sounds:getValue())
     self.config_dirty = false
 end
 
