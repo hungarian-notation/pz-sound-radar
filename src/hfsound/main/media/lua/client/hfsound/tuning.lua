@@ -13,7 +13,7 @@ HFSOUND.hearing = {
     NORMAL                = 1,
     KEEN_HEARING          = 1.2,
     HARD_OF_HEARING       = 0.8,
-    THROUGH_EXTERIOR_WALL = 0.666,
+    THROUGH_EXTERIOR_WALL = 0.8,
 }
 
 HFSOUND.tuning = (function()
@@ -38,7 +38,7 @@ HFSOUND.tuning = (function()
                 define_sound {
                     category = "idle",
                     period = 10,
-                    radius = 6,
+                    radius = 8,
                     duration = 4,
                     style = styles.BREATH_STYLE,
                 },
@@ -47,14 +47,14 @@ HFSOUND.tuning = (function()
             stumble = {
                 define_sound {
                     category = "stumble",
-                    frequency = 4,
-                    radius = 3,
-                    style = styles.FOOTSTEP_STYLE,
+                    period   = 0.5,
+                    radius   = 8,
+                    style    = styles.FOOTSTEP_STYLE,
                 },
                 define_sound {
                     category = "stumble",
-                    frequency = 1,
-                    radius = 6,
+                    period = 1,
+                    radius = 12,
                     style = styles.FOOTSTEP_STYLE,
                 }
             },
@@ -62,20 +62,20 @@ HFSOUND.tuning = (function()
             walk    = {
                 define_sound {
                     category = "walk",
-                    frequency = 4,
-                    radius   = 3,
-                    style    = styles.FOOTSTEP_STYLE
-                },
-                define_sound {
-                    category = "walk",
-                    period   = 1,
+                    period   = 0.25,
                     radius   = 6,
                     style    = styles.FOOTSTEP_STYLE
                 },
                 define_sound {
                     category = "walk",
-                    period   = 8,
+                    period   = 1,
                     radius   = 8,
+                    style    = styles.FOOTSTEP_STYLE
+                },
+                define_sound {
+                    category = "walk",
+                    period   = 8,
+                    radius   = 12,
                     style    = styles.FOOTSTEP_STYLE
                 }
             },
@@ -83,13 +83,13 @@ HFSOUND.tuning = (function()
             clamber = {
                 define_sound {
                     category = "clamber",
-                    period = 7,
+                    period = 1,
                     radius = 8,
                     style = styles.CLAMBER_STYLE,
                 },
                 define_sound {
                     category = "clamber",
-                    period = 8,
+                    period = 1,
                     radius = 12,
                     style = styles.CLAMBER_STYLE,
                 }
@@ -98,7 +98,13 @@ HFSOUND.tuning = (function()
             attack  = {
                 define_sound {
                     category = "attack",
-                    frequency = 1,
+                    period = 0.5,
+                    radius = 8,
+                    style = styles.ATTACK_STYLE,
+                },
+                define_sound {
+                    category = "attack",
+                    period = 2,
                     radius = 12,
                     style = styles.ATTACK_STYLE,
                 },

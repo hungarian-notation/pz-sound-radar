@@ -1,26 +1,26 @@
-local opt = require("hfsound/options")
+local options_lib    = require("hfsound/options/options")
 
-local geomlib = require('hfsound/geom')
-local rotate_vector = geomlib.rotate_vector
-local project_iso = geomlib.project_iso
+local geomlib        = require('hfsound/geom')
+local rotate_vector  = geomlib.rotate_vector
+local project_iso    = geomlib.project_iso
 local project_isooff = geomlib.project_isooffset
 
-local hfgfx = require('hfsound/graphics')
-local drawTexture = hfgfx.drawTexture
+local hfgfx          = require('hfsound/graphics')
+local drawTexture    = hfgfx.drawTexture
 
-local Gradients = require('hfsound/gradients')
-local Icons = require('hfsound/icons')
+local Gradients      = require('hfsound/gradients')
+local Icons          = require('hfsound/icons')
 
-local PI    = 3.141592653589793
-local TAU   = 2 * PI
+local PI             = 3.141592653589793
+local TAU            = 2 * PI
 
-local cos   = math.cos
-local sin   = math.sin
-local min   = math.min
-local max   = math.max
-local rad   = math.rad
-local floor = math.floor
-local ceil  = math.ceil
+local cos            = math.cos
+local sin            = math.sin
+local min            = math.min
+local max            = math.max
+local rad            = math.rad
+local floor          = math.floor
+local ceil           = math.ceil
 
 
 ---@class (partial) hfs.ScopeRenderer
@@ -96,7 +96,7 @@ function ScopeRenderer:update()
 end
 
 function ScopeRenderer:update_quality()
-    self.m_quality_limit = floor(opt.options.quality.value)
+    self.m_quality_limit = floor(options_lib.get_options().controls.slider_quality.value)
     self.m_quality = 1 / rad(360 / self.m_quality_limit)
 end
 

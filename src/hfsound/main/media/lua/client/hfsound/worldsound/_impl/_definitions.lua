@@ -1,9 +1,10 @@
-local options = require("hfsound/options/options")
-local taggers = require('hfsound/worldsound/_impl/_taggers')
-local styles = require('hfsound/scope/style/style')
-local color = styles.colors.solid
-local Icons = require('hfsound/icons')
-local opts = options.get_options()
+local options   = require("hfsound/options/options")
+local taggers   = require('hfsound/worldsound/_impl/_taggers')
+local styles    = require('hfsound/scope/style/style')
+local scopeutil = require('hfsound/scope/util')
+local color     = styles.colors.solid
+local Icons     = require('hfsound/icons')
+local opts      = options.get_options()
 
 ---type guarding validator for classifiers
 ---@param tbl hfs.WSClassifier
@@ -185,18 +186,21 @@ module.classifier.THUMP_FENCE = classifier {
 module.classifier.ISOANIMAL = classifier {
     duration = 1,
     discriminator = taggers.uid,
-    style = module.styles.LIVING
+    callback_update = scopeutil.callback_followsource,
+    style = module.styles.ANIMAL
 }
 
 module.classifier.ISOPLAYER = classifier {
     duration = 1,
     discriminator = taggers.uid,
+    callback_update = scopeutil.callback_followsource,
     style = module.styles.LIVING
 }
 
 module.classifier.ISOSURVIVOR = classifier {
     duration = 1,
     discriminator = taggers.uid,
+    callback_update = scopeutil.callback_followsource,
     style = module.styles.LIVING
 }
 

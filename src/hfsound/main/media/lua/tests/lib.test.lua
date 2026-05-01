@@ -57,11 +57,11 @@ function getDebug()
     return true
 end
 
----@param a any
----@param b any
+---@param expected any
+---@param actual any
 ---@param assertive? boolean
 ---@param path? string[]
-local function equals(a, b, assertive, path)
+local function equals(expected, actual, assertive, path)
     if assertive then assert(path ~= nil) end
 
     ---@param cause string
@@ -98,26 +98,26 @@ local function equals(a, b, assertive, path)
         return next
     end
 
-    if a == b then
+    if expected == actual then
         return true
     end
 
-    if type(a) == "table" and type(b) == "table" then
-        if not equals(getmetatable(a), getmetatable(b), assertive, next_path("(metatable)")) then
+    if type(expected) == "table" and type(actual) == "table" then
+        if not equals(getmetatable(expected), getmetatable(actual), assertive, next_path("(metatable)")) then
             return false
         end
 
         local checked = {}
 
-        for k, _ in pairs(a) do
-            if not equals(a[k], b[k], assertive, next_path(k)) then
+        for k, _ in pairs(expected) do
+            if not equals(expected[k], actual[k], assertive, next_path(k)) then
                 return false
             end
 
             checked[k] = true
         end
 
-        for k, _ in pairs(b) do
+        for k, _ in pairs(actual) do
             if not checked[k] then
                 if assertive then validation_error("different values", next_path(k)) end
                 return false
@@ -126,15 +126,37 @@ local function equals(a, b, assertive, path)
 
         return true
     else
-        if assertive then validation_error("different values: '" .. tostring(a) .. "' vs '" .. tostring(b) .. "'", path) end
+        if assertive then
+            validation_error(
+                "different values: expected: '" .. tostring(expected) .. "' vs actual: '" .. tostring(actual) .. "'",
+                path)
+        end
         return false
     end
 end
 
-function assert_equals(a, b)
-    local ok, err = pcall(function() equals(a, b, true, {}) end)
+function assert_equals(expected, actual)
+    local ok, err = pcall(function() equals(expected, actual, true, {}) end)
 
     if not ok then
         print(err); error(err, 2)
+    end
+end
+
+---@overload fun(expected:number, actual:number, allowable_delta:number): number
+---@overload fun(expected:number, actual:number): number
+---@param expected number
+---@param actual number
+---@param allowable_delta? number
+function assert_roughly_equal(expected, actual, allowable_delta)
+    if allowable_delta == nil then allowable_delta = 0.001 end
+
+    if type(actual) ~= "number" then
+        error(string.format("invalid comparison; <actual> value is non numeric: %s %s", type(actual), tostring(actual)))
+    elseif math.abs(expected - actual) > allowable_delta then
+        error(string.format("excessive delta (greater than %.6f) between expected (%f) and actual (%f)",
+            allowable_delta, expected, actual))
+    else
+        return actual
     end
 end
