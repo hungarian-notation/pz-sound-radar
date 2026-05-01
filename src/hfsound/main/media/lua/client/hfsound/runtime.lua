@@ -30,12 +30,17 @@ local function hook(runtime)
     -- per-tick.
     local runtime_zombiesounds = runtime.zombiesounds
     local zombiesound_simulate = runtime_zombiesounds.simulate
-    local function OnZombieUpdate(zombie)
+        local function OnZombieUpdate(zombie)
         zombiesound_simulate(runtime_zombiesounds, zombie)
     end
 
+    local hooked_simulator = false
+
     Events.OnTick.Add(OnTick)
-    Events.OnZombieUpdate.Add(OnZombieUpdate)
+    if SandboxVars['hfsound']['SimulateZombieSounds'] then
+        Events.OnZombieUpdate.Add(OnZombieUpdate)
+        hooked_simulator = true
+    end
     Events.OnWorldSound.Add(OnWorldSound)
     Events.OnPreUIDraw.Add(OnPreUIDraw)
     Events.OnGameBoot.Add(OnGameBoot)
@@ -50,11 +55,10 @@ local function hook(runtime)
         -- Events.EveryOneMinute.Remove(EveryOneMinute)
     end
 
-    local hooked_simulator = true
 
     local function set_hookzombies(enable)
         if enable then
-            if not hooked_simulator then
+            if not hooked_simulator and SandboxVars['hfsound']['SimulateZombieSounds'] then
                 Events.OnZombieUpdate.Add(OnZombieUpdate)
                 hooked_simulator = true
             end

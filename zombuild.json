@@ -38,9 +38,13 @@
 
                 "42.17": [
                     {
+                        "source": "src/hfsound/main/media/media_root",
+                        "prefix": "media"
+                    },
+                    {
                         "source": "src/hfsound/main/media/lua",
                         "prefix": "media/lua",
-                        "ignore": [ "*.d.lua", "./tests/**" ]
+                        "ignore": [ "*.d.lua", "tests/*", "tests/**/*" ]
                     },
                     {
                         "source": ".generated/lua",

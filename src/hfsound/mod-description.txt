@@ -9,6 +9,3 @@ Note that the effects of the deaf, hard-of-hearing, and keen-hearing traits are
 modeled by this mod. This mod has no effect for characters with the deaf trait,
 and characters with the other traits will have the range at which they perceive 
 sounds altered accordingly.
-
-This mod was inspired in part by the currently defunct `Visual Sounds` mod, 
-though it has some major differences that I consider to be strict upgrades.

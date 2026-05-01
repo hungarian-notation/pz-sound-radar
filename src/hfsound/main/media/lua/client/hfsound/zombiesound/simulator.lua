@@ -70,8 +70,10 @@ local math_exp = math.exp
 local ZombRandFloat = ZombRandFloat
 local ipairs = ipairs
 local unpack = unpack
-
 local ZOMBIE_STATES = states.ZOMBIE_STATES
+local top_speed = 0.0
+
+local animstates = {}
 
 ---@param zombie IsoZombie
 function ZombieSoundSimulator:simulate(zombie)
@@ -82,7 +84,7 @@ function ZombieSoundSimulator:simulate(zombie)
     local delta = GameTime_getRealworldSecondsSinceLastUpdate(gameTime)
 
     local state_category = ZOMBIE_STATES[zombie:getCurrentStateName()]
-    if state_category == nil then 
+    if state_category == nil then
         return
     end
 
@@ -94,14 +96,14 @@ function ZombieSoundSimulator:simulate(zombie)
     end
 
     -- FIXME tuning.zombies needs to be an upvalue at release
-    local state_sounds = HFSOUND.tuning.zombies[state_category] 
+    local state_sounds = HFSOUND.tuning.zombies[state_category]
 
     for _i, sound in ipairs(state_sounds) do
         -- Compute the chance of the zombie making an audible noise in the
         -- time since it was last simulated.
 
-        -- This is the the complement of the Poisson distribution for k=0, 
-        -- i.e. one minus the chance that zero events occurred 
+        -- This is the the complement of the Poisson distribution for k=0,
+        -- i.e. one minus the chance that zero events occurred
 
         local chance = 1 - math_exp(-sound.frequency * delta)
         local roll = ZombRandFloat(0, 1)
@@ -117,7 +119,5 @@ end
 local module = {
     ZombieSoundSimulator = ZombieSoundSimulator
 }
-
-
 
 return module

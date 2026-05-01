@@ -61,24 +61,29 @@ end
 function HfSoundOptions:_build_controls()
     local mod_options = PZAPI.ModOptions:create(kt_option "Options")
     local controls    = {}
-    mod_options:addTitle(t_option "General")
-    controls.tickbox_enable_zombie_sounds = mod_options:addTickBox(option_args("EnableZombieSounds", true))
-    mod_options:addTitle(t_option "Display")
-    controls.slider_quality = mod_options:addSlider(option_args("DisplayQuality", 10, 50, 1, 30))
-    controls.tickbox_dynamic_arcs = mod_options:addTickBox(option_args("DisplayDynamicArcs", true))
-    
-    -- controls.slider_radius_min = mod_options:addSlider(option_args("DisplayRadiusMin", 0.2, 4, 0.1, 1))
-    -- controls.slider_radius_max = mod_options:addSlider(option_args("DisplayRadiusMax", 2, 12, 0.2, 8))
-    mod_options:addTitle(t_option "SoundColor")
-    for _, category in pairs(definitions.Order) do
-        mod_options:addTitle(t_option("SoundColor" .. category.group))
-        for _, soundtype in ipairs(category.sounds) do
-            self:_build_colorpicker(mod_options, soundtype)
-        end
+    do
+        mod_options:addTitle(t_option "General")
+        controls.tickbox_enable_zombie_sounds = mod_options:addTickBox(option_args("EnableZombieSounds", true))
     end
-    controls.button_resetcolors = mod_options:addButton(option_args("ResetColorsButton",
-        "UI_options_tooltip_hfsound_ResetColorsButton",
-        self._promptresetcolors, self))
+    do
+        mod_options:addTitle(t_option "Display")
+        controls.slider_quality = mod_options:addSlider(option_args("DisplayQuality", 10, 50, 1, 30))
+        controls.tickbox_dynamic_arcs = mod_options:addTickBox(option_args("DisplayDynamicArcs", true))
+        -- controls.slider_radius_min = mod_options:addSlider(option_args("DisplayRadiusMin", 0.2, 4, 0.1, 1))
+        -- controls.slider_radius_max = mod_options:addSlider(option_args("DisplayRadiusMax", 2, 12, 0.2, 8))
+    end
+    do
+        mod_options:addTitle(t_option "SoundColor")
+        for _, category in pairs(definitions.Order) do
+            mod_options:addTitle(t_option("SoundColor" .. category.group))
+            for _, soundtype in ipairs(category.sounds) do
+                self:_build_colorpicker(mod_options, soundtype)
+            end
+        end
+        controls.button_resetcolors = mod_options:addButton(option_args("ResetColorsButton",
+            "UI_options_tooltip_hfsound_ResetColorsButton",
+            self._promptresetcolors, self))
+    end
     return controls
 end
 

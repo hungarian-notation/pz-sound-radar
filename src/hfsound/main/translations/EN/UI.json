@@ -33,7 +33,7 @@
         ".Gunfire": "Gunfire (Meta Event)",
         ".Helicopter": "Helicopters",
         ".Electronics": "Radios and Televisions",
-        ".Appliance": "Applicances",
+        ".Appliance": "Appliances",
         ".Generator": "Generators"
 
       },
@@ -50,6 +50,7 @@
       "@": "Display & Performance",
 
       ".Quality": "Indicator Quality",
+      ".DynamicArcs": "Dynamic Indicator Arcs",
       ".Limit": "Maximum Indicators"
     },
 
@@ -82,7 +83,7 @@
         ".Gunfire": "Gunfire (Meta Event)",
         ".Helicopter": "Helicopters",
         ".Electronics": "Radios and Televisions",
-        ".Appliance": "Applicances",
+        ".Appliance": "Appliances",
         ".Generator": "Generators"
 
       },

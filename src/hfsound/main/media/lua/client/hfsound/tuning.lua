@@ -30,30 +30,30 @@ HFSOUND.tuning = (function()
             idle    = {
                 define_sound {
                     category = "idle",
-                    period = 1,
-                    radius = 3,
+                    period = 4,
+                    radius = 5,
                     duration = 4,
                     style = styles.BREATH_STYLE,
                 },
                 define_sound {
                     category = "idle",
-                    period = 10,
+                    period = 16,
                     radius = 8,
-                    duration = 4,
+                    duration = 2,
                     style = styles.BREATH_STYLE,
                 },
             },
 
             stumble = {
                 define_sound {
-                    category = "stumble",
-                    period   = 0.5,
-                    radius   = 8,
-                    style    = styles.FOOTSTEP_STYLE,
+                    category  = "stumble",
+                    frequency = 2,
+                    radius    = 8,
+                    style     = styles.FOOTSTEP_STYLE,
                 },
                 define_sound {
                     category = "stumble",
-                    period = 1,
+                    frequency = 1,
                     radius = 12,
                     style = styles.FOOTSTEP_STYLE,
                 }
@@ -61,22 +61,22 @@ HFSOUND.tuning = (function()
 
             walk    = {
                 define_sound {
-                    category = "walk",
-                    period   = 0.25,
-                    radius   = 6,
-                    style    = styles.FOOTSTEP_STYLE
+                    category  = "walk",
+                    frequency = 4,
+                    radius    = 5,
+                    style     = styles.FOOTSTEP_STYLE
                 },
                 define_sound {
-                    category = "walk",
-                    period   = 1,
-                    radius   = 8,
-                    style    = styles.FOOTSTEP_STYLE
+                    category  = "walk",
+                    frequency = 1 / 1,
+                    radius    = 8,
+                    style     = styles.FOOTSTEP_STYLE
                 },
                 define_sound {
-                    category = "walk",
-                    period   = 8,
-                    radius   = 12,
-                    style    = styles.FOOTSTEP_STYLE
+                    category  = "walk",
+                    frequency = 1 / 16,
+                    radius    = 12,
+                    style     = styles.FOOTSTEP_STYLE
                 }
             },
 

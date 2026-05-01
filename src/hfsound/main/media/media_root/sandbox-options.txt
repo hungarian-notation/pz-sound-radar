@@ -1,0 +1,10 @@
+VERSION = 1,
+
+
+option hfsound.SimulateZombieSounds
+{
+	type = boolean, 
+	default = true,
+	page = hfsound,
+	translation = hfsound_SimulateZombieSounds,
+}

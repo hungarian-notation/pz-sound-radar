@@ -1,0 +1,14 @@
+{
+    "Sandbox_hfsound": {
+        "@": "Sound Radar",
+        "SimulateZombieSounds": {
+            "@": "Simulate Zombie Sounds",
+            "tooltip": [
+                "Permanently disables the part of the mod that simulates",
+                "zombie sounds. Only real sound events as defined by the",
+                "game's WorldSound event will be visualized."
+            ]
+        }
+
+    }
+}
